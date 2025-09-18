@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/* @font-face {
+    font-family: PPPangram;
+    src: url(../fonts/PPPangramSansRounded-Semibold.otf);
+   
+}
+@font-face{
+     font-family: hind;
+    src:url(../fonts/HindMadurai-Bold.ttf)
+} */
+
+@font-face{
+     font-family: hind;
+    src:url(../fonts/baloo.ttf)
+}
