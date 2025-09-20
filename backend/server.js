@@ -1,9 +1,36 @@
 import express from "express";
 import cors from "cors";
-import mongoose from "mongoose";
+import mongoose, { STATES } from "mongoose";
 import dotenv from "dotenv";
 
+import multer from "multer";
+import { v2 as cloudinary } from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+
 dotenv.config();
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "events",
+    allowed_formats: ["jpg", "png", "jpeg"],
+  },
+});
+const gallerystorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "gallery",
+    allowed_formats: ["jpg", "png", "jpeg"],
+  },
+});
+
+const upload = multer({ storage, gallerystorage });
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -66,22 +93,29 @@ const EventsSchema = new mongoose.Schema({
   sms: Boolean,
   home: Boolean,
   mail: Boolean,
-  
+  image: String,
 });
 
 const Event = mongoose.model("Event", EventsSchema);
 
-app.post("/events",async (req,res)=>{
-  try{
-    const newEvent = new Event(req.body);
+app.post("/events", upload.single("image"), async (req, res) => {
+  try {
+    const { event, post, sms, mail, home } = req.body;
+    const newEvent = new Event({
+      event,
+      post,
+      sms,
+      home,
+      mail,
+      image: req.file?.path,
+    });
     await newEvent.save();
     res.status(201).json(newEvent);
-
-  }catch(err){
-     console.error(err.message);
-     res.status(500).json({ error: err.message });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: err.message });
   }
-})
+});
 
 // homepage events getting
 
@@ -90,12 +124,61 @@ app.get("/notifications", async (req, res) => {
     const data = await Event.find({ home: true });
     res.json(data);
     // console.log("///////////////////////////")
-    console.log(res)
+    console.log(res);
   } catch (err) {
-    console.log(err)
+    console.log(err);
     res.status(500).json({ error: "Error fetching notifications" });
   }
 });
+
+// gallery memebers adding
+
+const gallerySchema = new mongoose.Schema({
+  mname: String,
+  position: String,
+  email: String,
+  image: String,
+  description: String,
+});
+
+const Gallery = mongoose.model("Gallery", gallerySchema);
+
+app.post("/gallery", upload.single("image"), async (req, res) => {
+  const { mname, email, description, position } = req.body;
+  console.log(mname)
+  try {
+    const newMember = new Gallery({
+      mname,
+      email,
+      position,
+      description,
+      image: req.file?.path,
+    });
+    await newMember.save();
+    res.status(201).json(newMember);
+    console.log(res.data)
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+// geting gallery data
+
+app.get('/members',async (req,res)=>{
+ 
+  try {
+     
+  const data = await Gallery.find();
+  res.json(data)
+  console.log(data)
+  
+  } catch (error) {
+    console.log(err)  
+  }
+
+
+
+})
 
 
 
