@@ -34,6 +34,13 @@ const upload = multer({ storage, gallerystorage });
 
 const app = express();
 app.use(cors());
+const cors = require("cors");
+app.use(cors({
+  origin: "https://nandhavanam.onrender.com", 
+  methods: "GET,POST,PUT,DELETE",
+  credentials: true
+}));
+
 app.use(express.json());
 
 // const SaltRounds = 10;
