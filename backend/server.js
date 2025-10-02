@@ -2,7 +2,8 @@ import express from "express";
 import cors from "cors";
 import mongoose, { STATES } from "mongoose";
 import dotenv from "dotenv";
-
+import nodemailer from "nodemailer";
+import { GoogleGenAI } from "@google/genai";
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
@@ -110,6 +111,7 @@ app.post("/events", upload.single("image"), async (req, res) => {
       image: req.file?.path,
     });
     await newEvent.save();
+
     res.status(201).json(newEvent);
   } catch (err) {
     console.error(err.message);
@@ -145,7 +147,7 @@ const Gallery = mongoose.model("Gallery", gallerySchema);
 
 app.post("/gallery", upload.single("image"), async (req, res) => {
   const { mname, email, description, position } = req.body;
-  console.log(mname)
+  console.log(mname);
   try {
     const newMember = new Gallery({
       mname,
@@ -156,7 +158,7 @@ app.post("/gallery", upload.single("image"), async (req, res) => {
     });
     await newMember.save();
     res.status(201).json(newMember);
-    console.log(res.data)
+    console.log(res.data);
   } catch (err) {
     console.log(err);
   }
@@ -164,23 +166,107 @@ app.post("/gallery", upload.single("image"), async (req, res) => {
 
 // geting gallery data
 
-app.get('/members',async (req,res)=>{
- 
+app.get("/members", async (req, res) => {
   try {
-     
-  const data = await Gallery.find();
-  res.json(data)
-  console.log(data)
-  
+    const data = await Gallery.find();
+    res.json(data);
+    console.log(data);
   } catch (error) {
-    console.log(err)  
+    console.log(err);
   }
+});
 
+// mailer for contact form
+app.post("/send", async (req, res) => {
+  const { name, email, message } = req.body;
 
+  try {
+    console.log(
+      "Trying to login with:",
+      process.env.SMTP_USER,
+      process.env.SMTP_PASS?.length
+    );
 
-})
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
 
+    await transporter.sendMail({
+      from: `"${name}" <${email}>`,
+      to: process.env.SMTP_USER,
+      subject: "New Contact Form Submission From " + name,
+      text: `
+    Name: ${name}
+    Email: ${email}
+    Message: ${message}
+  `,
+      html: `
+    <h3>New Contact Form Submission</h3>
+    <p><b>Name:</b> ${name}</p>
+    <p><b>Email:</b> ${email}</p>
+    <p><b>Message:</b> ${message}</p>
+  `,
+    });
+    await transporter.sendMail({
+      from: process.env.SMTP_USER,
+      to: `<${email}>`,
+      subject: "Nandhavanam - Replying to your Query",
+      text: `
+    Name: ${name}
+    Email: ${email}
+    Message: ${message}
+  `,
+      html: `
+    <h3>Thanks for your Request</h3>
+    <p>Check the Details</p>
+    <p><b>Name:</b> ${name}</p>
+    <p><b>Email:</b> ${email}</p>
+    <p><b>Message:</b> ${message}</p>
+    <p>We will get back to you soon.</p>
+  `,
+    });
+    res
+      .status(200)
+      .json({ success: true, message: "Email sent successfully!" });
+  } catch (err) {
+    console.error("Mailer error:", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 
+// google gemini ai 
+app.post("/generate", async (req, res) => {
+  const { prompt } = req.body; 
+  try {
+    const response = await fetch('https://gemini.googleapis.com/v1/models/gemini-1.5-pro-preview:generateText', {
+      method: 'POST',       
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.GOOGLE_API_KEY}`
+      },
+      body: JSON.stringify({
+        prompt: {
+          text: prompt,
+          context: "You are a helpful assistant."
+        },
+        maxOutputTokens: 256,
+        temperature: 0.7
+      })
+    }); 
+    const data = await response.json();
+    res.status(200).json(data);
+  } catch (err) {
+    console.error("AI Generation error:", err);
+    res.status(500).json({ success: false, error: err.message });
+    
+  }
+} );
 
 
 
