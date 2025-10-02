@@ -11,7 +11,7 @@ export default function Login() {
 
     try {
       setLoading(true); // start loading
-      const res = await fetch("http://localhost:5000/login", {
+      const res = await fetch("https://nandhavanam-backend.onrender.com/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -21,7 +21,7 @@ export default function Login() {
       if (res.ok) {
         alert("Login Successful!");
         localStorage.setItem("authToken", JSON.stringify(data.user));
-        window.location.href = "http://localhost:5173/admin";
+        window.location.href = "https://nandhavanam-backend.onrender.com/admin";
       } else {
         alert(data.message);
       }

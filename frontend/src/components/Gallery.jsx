@@ -8,7 +8,7 @@ export default function Gallery() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost:5000/members")
+    fetch("https://nandhavanam-backend.onrender.com/members")
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch members");
         return res.json();

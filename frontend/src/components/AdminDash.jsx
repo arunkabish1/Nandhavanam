@@ -149,7 +149,7 @@ export default function AdminDash() {
     if (memberImage) formData.append("image", memberImage);
 
     try {
-      const res = await fetch("http://localhost:5000/gallery", { method: "POST", body: formData });
+      const res = await fetch("https://nandhavanam-backend.onrender.com/gallery", { method: "POST", body: formData });
       const data = await res.json();
       if (res.ok) {
         setMemberStatus({ message: 'Gallery member added successfully!', type: 'success' });
@@ -174,7 +174,7 @@ export default function AdminDash() {
     if (eventImage) formData.append("image", eventImage);
     
     try {
-      const res = await fetch("http://localhost:5000/events", { method: "POST", body: formData });
+      const res = await fetch("https://nandhavanam-backend.onrender.com/events", { method: "POST", body: formData });
       const data = await res.json();
       if (res.ok) {
         setEventStatus({ message: 'Event added successfully!', type: 'success' });
@@ -198,7 +198,7 @@ export default function AdminDash() {
     const payload = { ...roleData, password };
 
     try {
-      const res = await fetch("http://localhost:5000/users", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      const res = await fetch("https://nandhavanam-backend.onrender.com/users", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       if (res.ok) {
         setRoleStatus({ message: `${roleData.name} created as ${roleData.role} successfully.`, type: 'success' });
         e.target.reset();

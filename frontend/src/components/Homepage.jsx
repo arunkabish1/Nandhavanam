@@ -27,7 +27,7 @@ export default function Homepage() {
 
   // Fetch events
   useEffect(() => {
-    fetch("http://localhost:5000/notifications")
+    fetch("https://nandhavanam-backend.onrender.com/notifications")
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch notifications");
         return res.json();
