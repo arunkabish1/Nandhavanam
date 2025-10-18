@@ -5,23 +5,28 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
-  const [showHeader, setShowHeader] = useState(false);
+  const [headerOpacity, setHeaderOpacity] = useState(1);
   const [showlogin, setShowlogin] = useState(true);
 
+  // Check login (fix)
   const checkLogin = async () => {
     const token = localStorage.getItem("authToken");
     if (token) {
-      showlogin(false);
+      setShowlogin(false);
     }
   };
 
-  // Show header only when cursor is near top
+  useEffect(() => {
+    checkLogin();
+  }, []);
+
+  // Change header opacity based on cursor position
   useEffect(() => {
     const handleMouseMove = (e) => {
       if (e.clientY < 60) {
-        setShowHeader(true);
+        setHeaderOpacity(1); // fully visible
       } else if (!isOpen) {
-        setShowHeader(false);
+        setHeaderOpacity(0.4); // lightly transparent
       }
     };
 
@@ -29,26 +34,27 @@ export default function Header() {
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [isOpen]);
 
-  // Common class generator for NavLink
   const linkClass = ({ isActive }) =>
     `inline-block px-2 py-1 font-semibold cursor-pointer rounded-2xl transition-colors ${
-      isActive ? "bg-gray-700 text-white" : "text-black hover:text-cyan-900"
+      isActive ? "bg-gray-800 text-white" : "text-black hover:text-cyan-900"
     }`;
 
   return (
     <>
-      {/* Main Header */}
+      {/* Header */}
       <motion.div
-        initial={{ y: -100, opacity: 0 }}
-        animate={
-          showHeader || isOpen ? { y: 0, opacity: 1 } : { y: -100, opacity: 0 }
-        }
+        initial={{ y: -80, opacity: 0 }}
+        animate={{ y: 0, opacity: headerOpacity }}
         transition={{ duration: 0.4, ease: "easeInOut" }}
-        className="fixed top-0 left-0 w-full bg-white/90 backdrop-blur-md shadow-md z-50 rounded-b-2xl"
+        className="fixed top-0 left-0 w-full backdrop-blur-lg shadow-sm z-50 rounded-b-2xl transition-all duration-300"
+        style={{
+          backgroundColor: `rgba(255, 255, 255, ${headerOpacity})`,
+          boxShadow: headerOpacity === 1 ? "0 2px 10px rgba(0,0,0,0.1)" : "none",
+        }}
       >
         <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-          <h1 className="text-black font-mono font-medium text-2xl">
-            Nandavanam
+          <h1 className="text-black font-mono font-medium text-2xl tracking-tight">
+            Nandhavanam
           </h1>
 
           {/* Desktop Nav */}
@@ -86,9 +92,9 @@ export default function Header() {
           <div className="hidden md:block">
             <button className="bg-black font-semibold text-white px-4 py-2 rounded-xl hover:bg-cyan-700">
               {showlogin ? (
-                <NavLink to="/admin">Admin Panel</NavLink>
-              ) : (
                 <NavLink to="/login">Login</NavLink>
+              ) : (
+                <NavLink to="/admin">Admin Panel</NavLink>
               )}
             </button>
           </div>
@@ -103,7 +109,7 @@ export default function Header() {
         </div>
       </motion.div>
 
-      {/* Mobile Nav Dropdown with Animation */}
+      {/* Mobile Nav Dropdown */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -111,7 +117,7 @@ export default function Header() {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="md:hidden bg-gray-100 rounded-xl shadow-md mx-3 mt-16 overflow-hidden fixed top-12 left-0 right-0 z-40"
+            className="md:hidden bg-slate-100 rounded-xl shadow-md mx-3 mt-16 overflow-hidden fixed top-0 left-0 right-0 z-40 backdrop-blur-md"
           >
             <ul className="flex flex-col space-y-4 text-black font-semibold p-4">
               <li>
@@ -160,15 +166,16 @@ export default function Header() {
                 </NavLink>
               </li>
               <li>
-                <NavLink to="/login" onClick={() => setIsOpen(false)}>
-                  <button className="w-full bg-black font-semibold text-white px-4 py-2 rounded-xl hover:bg-cyan-700">
-                    {showlogin ? (
-                      <NavLink to="/admin">Admin Panel</NavLink>
-                    ) : (
-                      <NavLink to="/login">Login</NavLink>
-                    )}
-                  </button>
-                </NavLink>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="w-full bg-black font-semibold text-white px-4 py-2 rounded-xl hover:bg-cyan-700"
+                >
+                  {showlogin ? (
+                    <NavLink to="/login">Login</NavLink>
+                  ) : (
+                    <NavLink to="/admin">Admin Panel</NavLink>
+                  )}
+                </button>
               </li>
             </ul>
           </motion.div>

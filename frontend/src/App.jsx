@@ -14,13 +14,21 @@ export default function App() {
   return (
     <>
       <Router>
-        <Header/>
+        <Header />
         <Routes>
-          <Route path="/login" element={<Login/>}></Route>
-          <Route path="/admin"  element={<ProtectedRoute> <AdminDash/> </ProtectedRoute>}></Route>
-          <Route path="/about" element={<About/>}></Route>
+          <Route path="/login" element={<Login />}></Route>
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                {" "}
+                <AdminDash />{" "}
+              </ProtectedRoute>
+            }
+          ></Route>
+          <Route path="/about" element={<About />}></Route>
           <Route path="/" element={<Homepage />}></Route>
-           <Route path="/admission" element={<Admission />}></Route>
+          <Route path="/admission" element={<Admission />}></Route>
           <Route path="/gallery" element={<Gallery />}></Route>
           <Route path="/contact" element={<Contact />}></Route>
         </Routes>

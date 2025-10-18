@@ -20,6 +20,8 @@ export default function Gallery() {
       .finally(() => setLoading(false));
   }, []);
 
+  
+
   return (
     <div className="relative min-h-screen bg-gradient-to-b from-white via-blue-50 to-white pt-20 px-4 overflow-hidden">
       <BackgroundBlobs />
