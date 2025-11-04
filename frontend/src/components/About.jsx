@@ -92,7 +92,7 @@ export default function About() {
           {/* 2. Social Initiatives */}
           <div className="bg-white/80 backdrop-blur-xl border border-green-100 rounded-2xl shadow-md hover:shadow-xl transition p-6 text-center">
             <img
-              src="https://scontent.fmaa2-4.fna.fbcdn.net/v/t39.30808-6/502489157_3891099574475879_2852090224541420491_n.jpg?_nc_cat=105&ccb=1-7&_nc_sid=127cfc&_nc_ohc=todr0b8K_gcQ7kNvwEwqKUA&_nc_oc=Admn3Ftge9QIV1uQ9JpvRt0BN2b09bma7HQ9ZEdl3zNs83F0a26NKurk1S2Gct5CbZ-58JkR36Dff45zWIdz1IJJ&_nc_zt=23&_nc_ht=scontent.fmaa2-4.fna&_nc_gid=fUz-oBkb1D2vb38ixCZZuA&oh=00_AfghKaLEMRo5sXezR7tBwlnohAbtWkGg6UHKidw4LU8taw&oe=690FAAEF"
+              src="https://scontent.fmaa2-1.fna.fbcdn.net/v/t39.30808-6/485801507_3817758038476700_7643677831592977098_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=127cfc&_nc_ohc=bxzbr_SZr-cQ7kNvwHNqIFt&_nc_oc=AdnXkn_9qDSLqNKEkm0cSXOwhbkzgrWE5eXzI5FlYI371dSKy_hVFkuAPjpZhpK1U130ZJe3BWgACF4ZnGMIlPtA&_nc_zt=23&_nc_ht=scontent.fmaa2-1.fna&_nc_gid=i02Y8CiT2-39SxcCHOySRg&oh=00_AfhKRVjrTWY-pWIBCBqYsFFbPOASljKupvTGM8Lz2265TA&oe=691000EC"
               alt="Social Welfare"
               className="rounded-2xl w-full h-48 object-cover mb-4"
             />
