@@ -34,12 +34,13 @@ const upload = multer({ storage, gallerystorage });
 
 const app = express();
 app.use(cors());
-const cors = require("cors");
+// const cors = require("cors");
 app.use(cors({
-  origin: "https://nandhavanam.onrender.com", 
+  origin: ["http://localhost:5173", "https://nandhavanam.onrender.com"],
   methods: "GET,POST,PUT,DELETE",
   credentials: true
 }));
+
 
 app.use(express.json());
 
@@ -80,18 +81,24 @@ app.post("/users", async (req, res) => {
 app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password required" });
+    }
+
     const user = await User.findOne({ email, password });
 
     if (!user) {
-      return res.status(401).json({ message: "Check Values Given" });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
-    res.json({ message: "Success", user });
 
-    console.log("done");
+    return res.status(200).json({ message: "Success", user });
   } catch (err) {
-    console.log(err);
+    console.error("Login error:", err);
+    return res.status(500).json({ message: "Internal server error" });
   }
 });
+
 
 // event adding functionality
 
@@ -102,20 +109,24 @@ const EventsSchema = new mongoose.Schema({
   home: Boolean,
   mail: Boolean,
   image: String,
+  date: String,
 });
 
 const Event = mongoose.model("Event", EventsSchema);
 
 app.post("/events", upload.single("image"), async (req, res) => {
   try {
-    const { event, post, sms, mail, home } = req.body;
+    console.log(req.body);
+    const { event, post, sms, mail, home, date } = req.body;
     const newEvent = new Event({
       event,
       post,
       sms,
       home,
       mail,
+      date,
       image: req.file?.path,
+      
     });
     await newEvent.save();
 

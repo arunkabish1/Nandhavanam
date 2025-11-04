@@ -1,26 +1,31 @@
-import { FaInstagram, FaFacebook, FaTwitter, FaYoutube } from "react-icons/fa";
 import React, { useRef, useState } from "react";
+import { FaInstagram, FaFacebook, FaTwitter, FaYoutube } from "react-icons/fa";
 import Modal from "./Modal.jsx";
 
 export default function Contact() {
-  const [isopen, setIsopen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const form = useRef();
-  const [Loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
 
   const toggleModal = () => {
-    setIsopen(true);
-    setTimeout(() => {
-      setIsopen(false);
-    }, 3000);
+    setIsOpen(true);
+    setTimeout(() => setIsOpen(false), 3000);
   };
 
   const resetDetails = () => {
     form.current.reset();
+    setErrorMsg(null);
   };
 
-  const sentEmail = async (e) => {
+  const sendEmail = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMsg(null);
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+
     const formData = new FormData(form.current);
     const data = {
       name: formData.get("user_name"),
@@ -33,153 +38,180 @@ export default function Contact() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeout);
       setLoading(false);
+
       if (res.ok) {
         toggleModal();
         resetDetails();
       } else {
-        console.error("Failed to send");
+        setErrorMsg("Failed to send message. Please try again later.");
       }
     } catch (error) {
-      console.error("Error:", error);
+      setLoading(false);
+      if (error.name === "AbortError")
+        setErrorMsg("Server is taking too long to respond. Try again later.");
+      else setErrorMsg("An error occurred. Please check your connection.");
     }
   };
 
   return (
-    <div className="min-h-screen mt-10 bg-white flex flex-col items-center justify-center py-16 px-4">
-      {/* Heading */}
-      <div className="text-center mb-12">
-        <h1 className="text-5xl font-bold text-blue-600 font-serif tracking-wide">
-          Get in Touch
-        </h1>
-        <p className="text-gray-600 mt-3 text-lg max-w-xl mx-auto">
-          Have a question, feedback, or just want to say hello? Fill in the form
-          below and I’ll get back to you shortly.
-        </p>
+    <div className="min-h-screen pt-10 flex flex-col md:flex-row bg-gradient-to-br from-blue-100 via-white to-indigo-100">
+      {/* LEFT PANEL */}
+      <div className="relative flex-1 flex flex-col justify-center items-center text-center bg-gradient-to-br from-blue-700 to-indigo-800 text-white p-10 overflow-hidden">
+        {/* Floating gradient blob */}
+        <div className="absolute inset-0 bg-gradient-to-b from-blue-700/50 via-transparent to-indigo-700/60 blur-3xl"></div>
+
+        <div className="relative z-10 max-w-md space-y-6">
+          <h1 className="text-5xl font-extrabold tracking-wide mb-4 drop-shadow-xl">
+            Contact Us
+          </h1>
+          <p className="text-lg text-blue-100 font-medium leading-relaxed">
+            We’d love to hear from you! Whether you have questions, suggestions,
+            or just want to say hi, drop us a message anytime.
+          </p>
+
+          {/* Social Links */}
+          <div className="flex justify-center space-x-8 mt-8 text-3xl">
+            <a
+              href="https://instagram.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-pink-300 hover:text-white transition-transform transform hover:scale-110"
+            >
+              <FaInstagram />
+            </a>
+            <a
+              href="https://twitter.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sky-300 hover:text-white transition-transform transform hover:scale-110"
+            >
+              <FaTwitter />
+            </a>
+            <a
+              href="https://facebook.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-300 hover:text-white transition-transform transform hover:scale-110"
+            >
+              <FaFacebook />
+            </a>
+            <a
+              href="https://youtube.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-red-400 hover:text-white transition-transform transform hover:scale-110"
+            >
+              <FaYoutube />
+            </a>
+          </div>
+
+          <p className="text-sm text-blue-200 mt-12">
+            © {new Date().getFullYear()} Nandhavanam 
+            
+          </p>
+        </div>
       </div>
 
-      {/* Social Icons */}
-      <div className="flex justify-center space-x-8 mb-10">
-        <a
-          href="#"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-gray-500 hover:text-pink-500 text-3xl transition-transform transform hover:scale-110"
-        >
-          <FaInstagram />
-        </a>
-        <a
-          href="#"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-gray-500 hover:text-blue-400 text-3xl transition-transform transform hover:scale-110"
-        >
-          <FaTwitter />
-        </a>
-        <a
-          href="#"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-gray-500 hover:text-blue-600 text-3xl transition-transform transform hover:scale-110"
-        >
-          <FaFacebook />
-        </a>
-        <a
-          href="#"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-gray-500 hover:text-red-600 text-3xl transition-transform transform hover:scale-110"
-        >
-          <FaYoutube />
-        </a>
-        {isopen && <Modal />}
-      </div>
+      {/* RIGHT FORM PANEL */}
+      <div className="flex-1 flex justify-center items-center py-20 px-6 relative">
+        <div className="w-full max-w-lg bg-white/80 backdrop-blur-xl border border-blue-100 rounded-3xl shadow-2xl p-10 transition-all duration-500 hover:shadow-blue-200">
+          <h2 className="text-3xl font-bold text-center text-blue-800 mb-8">
+            Send us a Message 💌
+          </h2>
 
-      {/* Contact Form */}
-      <form
-        ref={form}
-        onSubmit={sentEmail}
-        className="w-full max-w-lg bg-white p-10 rounded-2xl shadow-lg border border-gray-100"
-      >
-        {/* Name */}
-        <div className="mb-6">
-          <label
-            className="block text-gray-700 text-sm font-semibold mb-2"
-            htmlFor="name"
-          >
-            Full Name
-          </label>
-          <input
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-200 outline-none transition"
-            id="name"
-            name="user_name"
-            type="text"
-            placeholder="John Doe"
-            required
-          />
+          <form ref={form} onSubmit={sendEmail} className="space-y-6">
+            {/* Full Name */}
+            <div>
+              <label
+                className="block text-sm font-semibold text-gray-700 mb-2"
+                htmlFor="name"
+              >
+                Full Name
+              </label>
+              <input
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-200 outline-none transition"
+                id="name"
+                name="user_name"
+                type="text"
+                placeholder="John Doe"
+                required
+              />
+            </div>
+
+            {/* Email */}
+            <div>
+              <label
+                className="block text-sm font-semibold text-gray-700 mb-2"
+                htmlFor="email"
+              >
+                Email Address
+              </label>
+              <input
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-200 outline-none transition"
+                id="email"
+                name="user_email"
+                type="email"
+                placeholder="example@email.com"
+                required
+              />
+            </div>
+
+            {/* Message */}
+            <div>
+              <label
+                className="block text-sm font-semibold text-gray-700 mb-2"
+                htmlFor="message"
+              >
+                Message
+              </label>
+              <textarea
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-200 outline-none transition"
+                id="message"
+                name="message"
+                rows="5"
+                placeholder="Write your message..."
+                required
+              ></textarea>
+            </div>
+
+            {/* Error Message */}
+            {errorMsg && (
+              <p className="text-red-500 text-sm text-center">{errorMsg}</p>
+            )}
+
+            {/* Buttons */}
+            <div className="flex justify-center mt-8">
+              <button
+                type="submit"
+                disabled={loading}
+                className={`w-full py-3 rounded-full font-semibold text-white text-lg transition-transform ${
+                  loading
+                    ? "bg-blue-400 cursor-not-allowed"
+                    : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:scale-105 hover:shadow-lg"
+                }`}
+              >
+                {loading ? "Sending..." : "Send Message"}
+              </button>
+            </div>
+
+            <div className="flex justify-center mt-4">
+              <button
+                onClick={resetDetails}
+                type="reset"
+                className="text-gray-500 text-sm hover:text-gray-700 transition"
+              >
+                Reset Form
+              </button>
+            </div>
+          </form>
+
+          {isOpen && <Modal />}
         </div>
-
-        {/* Email */}
-        <div className="mb-6">
-          <label
-            className="block text-gray-700 text-sm font-semibold mb-2"
-            htmlFor="email"
-          >
-            Email Address
-          </label>
-          <input
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-200 outline-none transition"
-            id="email"
-            name="user_email"
-            type="email"
-            placeholder="example@email.com"
-            required
-          />
-        </div>
-
-        {/* Message */}
-        <div className="mb-6">
-          <label
-            className="block text-gray-700 text-sm font-semibold mb-2"
-            htmlFor="message"
-          >
-            Message
-          </label>
-          <textarea
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-200 outline-none transition"
-            id="message"
-            name="message"
-            rows="5"
-            placeholder="Write your message..."
-            required
-          ></textarea>
-        </div>
-
-        {/* Buttons */}
-        <div className="flex items-center justify-between mt-8">
-          <button
-            className="bg-blue-600 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-blue-700 transition-transform transform hover:scale-105"
-            type="submit"
-          >
-            {Loading ? "Sending..." : "Send Message"}
-          </button>
-          <button
-            className="bg-gray-400 text-white font-semibold py-3 px-6 rounded-full shadow-md hover:bg-gray-500 transition-transform transform hover:scale-105"
-            onClick={resetDetails}
-            type="reset"
-          >
-            Reset
-          </button>
-        </div>
-      </form>
-
-      {/* Footer */}
-      <div className="mt-12 text-center text-gray-600 text-sm">
-        <p>
-          Made with ❤️ | Developed by{" "}
-          <span className="font-semibold text-blue-600">Arun J</span>
-        </p>
       </div>
     </div>
   );

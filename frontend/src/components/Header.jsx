@@ -77,7 +77,7 @@ export default function Header() {
               </li>
               <li className="inline-block">
                 <NavLink to="/gallery" className={linkClass}>
-                  Gallery
+                  Members
                 </NavLink>
               </li>
               <li className="inline-block">
@@ -153,7 +153,7 @@ export default function Header() {
                   className={linkClass}
                   onClick={() => setIsOpen(false)}
                 >
-                  Gallery
+                  Members
                 </NavLink>
               </li>
               <li>

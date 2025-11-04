@@ -24,7 +24,7 @@ export default function AdminDash() {
   const [isGeneratingBio, setIsGeneratingBio] = useState(false);
 
   // State for the "Add Event" form
-  const [eventData, setEventData] = useState({ event: '', post: '', sms: false, mail: false, home: false });
+  const [eventData, setEventData] = useState({ event: '', post: '', sms: false, mail: false, home: false , date:''});
   const [eventImage, setEventImage] = useState(null);
   const [eventStatus, setEventStatus] = useState({ message: '', type: '' });
   const [isSubmittingEvent, setIsSubmittingEvent] = useState(false);
@@ -38,9 +38,7 @@ export default function AdminDash() {
   // --- Gemini API Integration ---
 
   const callGeminiAPI = async (prompt) => {
-    // In a real application, you'd use a secure way to handle API keys.
-    // This empty key is a placeholder for the Canvas environment.
-    const apiKey = 'AIzaSyBy7Dvw0sxN2zK-h-nBVeAX7PD5YwcnkVQ' || 'ak';
+     const apiKey = 'AIzaSyBy7Dvw0sxN2zK-h-nBVeAX7PD5YwcnkVQ' || 'ak';
      
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
@@ -48,7 +46,7 @@ export default function AdminDash() {
       contents: [{ parts: [{ text: prompt }] }],
     };
 
-    // Implements exponential backoff for retries
+
     let response;
     let delay = 1000;
     for (let i = 0; i < 5; i++) {
@@ -172,14 +170,14 @@ export default function AdminDash() {
     const formData = new FormData();
     Object.keys(eventData).forEach(key => formData.append(key, eventData[key]));
     if (eventImage) formData.append("image", eventImage);
-    
+    console.log(eventData);
     try {
       const res = await fetch("https://nandhavanam-backend.onrender.com/events", { method: "POST", body: formData });
       const data = await res.json();
       if (res.ok) {
         setEventStatus({ message: 'Event added successfully!', type: 'success' });
         e.target.reset();
-        setEventData({ event: '', post: '', sms: false, mail: false, home: false });
+        setEventData({ event: '', post: '', sms: false, mail: false, home: false, date: '' });
         setEventImage(null);
       } else { throw new Error(data.error || "Something went wrong."); }
     } catch (err) {
@@ -216,7 +214,7 @@ export default function AdminDash() {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-100 p-4 sm:p-6 md:p-8">
+      <div className="min-h-screen mt-16 bg-gray-100 p-4 sm:p-6 md:p-8">
         <div className="w-full max-w-7xl mx-auto">
           <h1 className="text-3xl text-center font-bold mb-8 text-cyan-900">
             Admin Dashboard
@@ -284,6 +282,21 @@ export default function AdminDash() {
                   <label htmlFor="eventImage" className="font-medium mb-1">Poster Image</label>
                   <input className="w-full border border-gray-300 p-2 rounded file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100" type="file" name="eventImage" accept="image/png,image/jpeg,image/jpg" id="eventImage" onChange={handleFileChange(setEventImage)} required />
                 </div>
+                <div>
+                  {/* Date Input */}
+                  <label htmlFor="eventDate" className="font-medium mb-1">Event Date</label>
+                  <input
+                    className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-cyan-600 outline-none w-full"
+                    type="date"
+                    name="date"
+                    id="eventDate"
+                    value={eventData.date}
+                    onChange={handleInputChange(setEventData)}
+                    required
+                  />
+                </div>
+
+
                 <button className="w-full bg-cyan-900 text-white px-6 py-2 rounded-3xl hover:bg-cyan-700 transition disabled:bg-gray-400" type="submit" disabled={isSubmittingEvent}>
                   {isSubmittingEvent ? 'Adding Event...' : 'Add Event'}
                 </button>

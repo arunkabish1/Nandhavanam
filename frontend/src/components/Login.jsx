@@ -4,34 +4,36 @@ import { useState } from "react";
 export default function Login() {
   const [loading, setLoading] = useState(false);
 
-  const checkLogin = async (e) => {
-    e.preventDefault();
-    const email = e.target.email.value;
-    const password = e.target.password.value;
+ const checkLogin = async (e) => {
+  e.preventDefault();
+  const email = e.target.email.value;
+  const password = e.target.password.value;
 
-    try {
-      setLoading(true); // start loading
-      const res = await fetch("https://localhost:5173/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
+  try{
+    setLoading(true);
+    const response = await fetch("https://nandhavanam-backend.onrender.com/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    }); 
 
-      if (res.ok) {
-        alert("Login Successful!");
-        localStorage.setItem("authToken", JSON.stringify(data.user));
-        window.location.href = "https://localhost:5173/admin";
-      } else {
-        alert(data.message);
-      }
-    } catch (err) {
-      console.log("Login error:", err);
-      alert("Something went wrong");
-    } finally {
-      setLoading(false); // stop loading
-    }
-  };
+    const data = await response.json();
+    console.log(data);
+    if (data) {
+      alert("Login successful!");
+      localStorage.setItem("authToken", data);
+      window.location.href = "/admin";
+    } 
+  } catch (error) {
+    console.error("Login error:", error);
+    alert("An error occurred during login. Please try again.");
+  } finally {
+    setLoading(false);  
+  }
+
+  }
 
   return (
     <motion.div
