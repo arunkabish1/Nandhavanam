@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 
 export default function About() {
   return (
-    <div className="relative min-h-screen bg-gradient-to-b from-indigo-50 via-white to-blue-50 text-gray-800 px-6 py-16 overflow-hidden">
+    <div className="relative pt-20 min-h-screen bg-gradient-to-b from-indigo-50 via-white to-blue-50 text-gray-800 px-6 py-16 overflow-hidden">
       {/* 🌸 Background Blobs */}
       <motion.div
         className="absolute w-96 h-96 bg-blue-300/30 rounded-full blur-3xl top-10 left-10"

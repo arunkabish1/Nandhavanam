@@ -9,6 +9,8 @@ import Gallery from "./components/Gallery.jsx";
 import { Admission } from "./components/Admission.jsx";
 import Header from "./components/Header.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import InstallPrompt from "./components/InstallPrompt.jsx";
+import TranslateFloatingButton from "./components/TranslateFloatingButton.jsx";
 
 export default function App() {
   return (
@@ -33,6 +35,8 @@ export default function App() {
           <Route path="/contact" element={<Contact />}></Route>
         </Routes>
       </Router>
+      <InstallPrompt/>
+      <TranslateFloatingButton />
     </>
-  );
+  );  
 }

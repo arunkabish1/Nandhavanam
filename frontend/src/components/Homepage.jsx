@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import bg from "../assets/kuwait.mp4";
+import bg from "../assets/1.mp4";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-
+import logo from "../assets/logo.png";
 export default function Homepage() {
   const [notification, setNotification] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -73,6 +73,11 @@ export default function Homepage() {
 
           {/* Content */}
           <div className="relative z-10 text-white text-center px-4 max-w-3xl">
+            <img
+              src={logo}
+              className="rounded-full h-28 item-center mx-auto p-2"
+              alt=""
+            />
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-1 leading-tight drop-shadow-xl">
               {isTamil ? "நந்தவனம்" : "Nandhavanam"}
             </h1>
@@ -139,11 +144,11 @@ export default function Homepage() {
                   whileHover={{ scale: 1.02 }}
                 >
                   {n.image && (
-                    <div className="overflow-hidden">
+                    <div className="">
                       <img
                         src={n.image}
                         alt={n.event}
-                        className="w-full h-56 object-cover transition-transform duration-500 group-hover:scale-105"
+                        className=""
                       />
                     </div>
                   )}
@@ -243,7 +248,7 @@ export default function Homepage() {
                   <img
                     src={selectedEvent.image}
                     alt={selectedEvent.event}
-                    className="w-full h-60 sm:h-72 md:h-80 object-cover rounded-2xl mb-4"
+                    className="  object-cover rounded-2xl mb-4"
                   />
                 )}
                 <h2 className="text-xl sm:text-2xl font-bold mb-3 p-2 text-center text-gray-900">

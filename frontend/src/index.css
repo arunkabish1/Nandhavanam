@@ -17,4 +17,22 @@
      font-family: hind;
     src:url(../fonts/baloo.ttf)
 }
+/* Hide the ugly Google top bar */
+.goog-te-banner-frame.skiptranslate,
+.goog-te-gadget-simple img {
+  display: none !important;
+}
+body {
+  top: 0 !important;
+}
 
+/* Style the select dropdown */
+#google_translate_element select.goog-te-combo {
+  border-radius: 8px;
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  background: white;
+  color: #333;
+  font-size: 0.9rem;
+  cursor: pointer;
+}

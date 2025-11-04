@@ -1,7 +1,13 @@
 import React, { useRef, useState } from "react";
-import { FaInstagram, FaFacebook, FaTwitter, FaYoutube } from "react-icons/fa";
+import {
+  FaInstagram,
+  FaFacebook,
+  FaTwitter,
+  FaYoutube,
+  FaPhoneAlt,
+} from "react-icons/fa";
 import Modal from "./Modal.jsx";
-
+import logo from "../assets/logo.png";
 export default function Contact() {
   const [isOpen, setIsOpen] = useState(false);
   const form = useRef();
@@ -59,17 +65,22 @@ export default function Contact() {
   };
 
   return (
-    <div className="min-h-screen pt-10 flex flex-col md:flex-row bg-gradient-to-br from-blue-100 via-white to-indigo-100">
+    <div className="min-h-screen pt-10 flex flex-col md:flex-row bg-gradient-to-br from-blue-50 via-white to-indigo-100">
       {/* LEFT PANEL */}
-      <div className="relative flex-1 flex flex-col justify-center items-center text-center bg-gradient-to-br from-blue-700 to-indigo-800 text-white p-10 overflow-hidden">
+      <div className="relative flex-1 flex flex-col justify-center items-center text-center bg-gradient-to-br from-blue-800 via-blue-700 to-indigo-900 text-white p-10 overflow-hidden">
         {/* Floating gradient blob */}
-        <div className="absolute inset-0 bg-gradient-to-b from-blue-700/50 via-transparent to-indigo-700/60 blur-3xl"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.15),transparent_60%)]"></div>
 
         <div className="relative z-10 max-w-md space-y-6">
-          <h1 className="text-5xl font-extrabold tracking-wide mb-4 drop-shadow-xl">
+          <img
+            src={logo} 
+            className="rounded-full mx-auto border-4 border-white shadow-lg w-40 h-40 object-cover"
+            alt="Nandhavanam Logo"
+          />
+          <h1 className="text-5xl font-extrabold tracking-wide mt-4">
             Contact Us
           </h1>
-          <p className="text-lg text-blue-100 font-medium leading-relaxed">
+          <p className="text-lg text-blue-100 leading-relaxed mt-3">
             We’d love to hear from you! Whether you have questions, suggestions,
             or just want to say hi, drop us a message anytime.
           </p>
@@ -80,7 +91,7 @@ export default function Contact() {
               href="https://instagram.com/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-pink-300 hover:text-white transition-transform transform hover:scale-110"
+              className="text-pink-300 hover:text-white transition-transform hover:scale-110"
             >
               <FaInstagram />
             </a>
@@ -88,7 +99,7 @@ export default function Contact() {
               href="https://twitter.com/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sky-300 hover:text-white transition-transform transform hover:scale-110"
+              className="text-sky-300 hover:text-white transition-transform hover:scale-110"
             >
               <FaTwitter />
             </a>
@@ -96,7 +107,7 @@ export default function Contact() {
               href="https://facebook.com/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-300 hover:text-white transition-transform transform hover:scale-110"
+              className="text-blue-300 hover:text-white transition-transform hover:scale-110"
             >
               <FaFacebook />
             </a>
@@ -104,9 +115,21 @@ export default function Contact() {
               href="https://youtube.com/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-red-400 hover:text-white transition-transform transform hover:scale-110"
+              className="text-red-400 hover:text-white transition-transform hover:scale-110"
             >
               <FaYoutube />
+            </a>
+          </div>
+
+          {/* Contact Info */}
+          <div className="flex flex-col items-center mt-10 space-y-2">
+            <p className="text-blue-100 text-sm">OR</p>
+            <a
+              href="tel:+96566693181"
+              className="flex items-center space-x-2 text-blue-100 hover:text-white transition-transform hover:scale-105"
+            >
+              <FaPhoneAlt className="text-lg" />
+              <span>Call us at +965 6669 3181</span>
             </a>
           </div>
 
@@ -119,8 +142,8 @@ export default function Contact() {
 
       {/* RIGHT FORM PANEL */}
       <div className="flex-1 flex justify-center items-center py-20 px-6 relative">
-        <div className="w-full max-w-lg bg-white/80 backdrop-blur-xl border border-blue-100 rounded-3xl shadow-2xl p-10 transition-all duration-500 hover:shadow-blue-200">
-          <h2 className="text-3xl font-bold text-center text-blue-800 mb-8">
+        <div className="w-full max-w-lg bg-white/80 backdrop-blur-2xl border border-blue-100 rounded-3xl shadow-2xl p-10 transition-all duration-500 hover:shadow-blue-200">
+          <h2 className="text-3xl font-bold text-center text-blue-800 mb-10">
             Send us a Message 💌
           </h2>
 
@@ -184,7 +207,7 @@ export default function Contact() {
               <p className="text-red-500 text-sm text-center">{errorMsg}</p>
             )}
 
-            {/* Buttons */}
+            {/* Submit Button */}
             <div className="flex justify-center mt-8">
               <button
                 type="submit"
@@ -199,6 +222,7 @@ export default function Contact() {
               </button>
             </div>
 
+            {/* Reset */}
             <div className="flex justify-center mt-4">
               <button
                 onClick={resetDetails}

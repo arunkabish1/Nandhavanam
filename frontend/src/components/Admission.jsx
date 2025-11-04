@@ -242,7 +242,7 @@ export function Admission() {
             viewport={{ once: true, amount: 0.1 }}
           >
             <motion.a
-              href="https://forms.gle/3y3b8pX9mYk7y2ZK6"
+              href="https://forms.office.com/r/RASMjnfssF?origin=lprLink"
               target="_blank"
               rel="noopener noreferrer"
               className="bg-gradient-to-r from-blue-800 to-indigo-700 text-white px-10 py-4 rounded-full shadow-lg 
