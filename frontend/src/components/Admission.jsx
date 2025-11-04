@@ -136,7 +136,7 @@ export function Admission() {
                   className="p-6 bg-white/80 border border-blue-100 rounded-xl shadow-md"
                 >
                   <img
-                    src="https://scontent.fmaa2-4.fna.fbcdn.net/v/t39.30808-6/547214834_3984595518459617_8006825847356659782_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=127cfc&_nc_ohc=2gYSUNe0yh0Q7kNvwGrk-Fe&_nc_oc=AdnW6KyLX0Lltvl0-fyjMNpQw9udNeTjhxEY5gxlm_y9r0ozjeX4qzLWAYvdkwANihIZExu4JCF9gGI-dTTyDn7o&_nc_zt=23&_nc_ht=scontent.fmaa2-4.fna&_nc_gid=28uUGv7pjb0ZO4aj_Rm7DQ&oh=00_AfjdTHTF4l5t4sJ5G3L2obHmbiHypxi09s9m85MDdqqcgQ&oe=690FBEE3"
+                    src="https://scontent.fmaa2-4.fna.fbcdn.net/v/t39.30808-6/550774458_3993197817599387_7561429241756067497_n.jpg?stp=dst-jpg_s590x590_tt6&_nc_cat=104&ccb=1-7&_nc_sid=127cfc&_nc_ohc=6v1NgwQhAYQQ7kNvwFeH1G0&_nc_oc=AdmBRpQ4Bfp1C06F5gZipCbPYKlCw7VbvCQw2Zdp_6A-0C9y5tfVunttJWeksZ1Y3SHMtnxyevygyw0G1xwgNonK&_nc_zt=23&_nc_ht=scontent.fmaa2-4.fna&_nc_gid=EaSlGNYajMgONN1Cl2iiuA&oh=00_Afin5Jv0NCjbdE9pxpjJ4xyLZ62w_ECQALSKgprRI6lJoA&oe=690FC7B6"
                     alt="Abu Halifa Tamil Class"
                     className="w-full h-40 object-cover rounded-lg mb-4"
                   />

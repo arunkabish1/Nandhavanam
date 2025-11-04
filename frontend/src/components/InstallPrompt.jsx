@@ -9,7 +9,7 @@ export default function InstallPromptModal() {
   // Capture the install prompt event
   useEffect(() => {
     const handleBeforeInstallPrompt = (e) => { 
-      e.preventDefault(); // stop auto prompt
+      e.preventDefault(); 
       setDeferredPrompt(e);
 
       // show modal after 5s delay
