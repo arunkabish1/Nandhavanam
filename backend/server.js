@@ -35,12 +35,13 @@ const upload = multer({ storage, gallerystorage });
 const app = express();
 app.use(cors());
 // const cors = require("cors");
-app.use(cors({
-  origin: ["http://localhost:5173", "https://nandhavanam.onrender.com"],
-  methods: "GET,POST,PUT,DELETE",
-  credentials: true
-}));
-
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "https://nandhavanam.onrender.com"],
+    methods: "GET,POST,PUT,DELETE",
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 
@@ -99,7 +100,6 @@ app.post("/login", async (req, res) => {
   }
 });
 
-
 // event adding functionality
 
 const EventsSchema = new mongoose.Schema({
@@ -126,7 +126,6 @@ app.post("/events", upload.single("image"), async (req, res) => {
       mail,
       date,
       image: req.file?.path,
-      
     });
     await newEvent.save();
 
@@ -195,99 +194,63 @@ app.get("/members", async (req, res) => {
 });
 
 // mailer for contact form
-app.post("/send", async (req, res) => {
-  const { name, email, message } = req.body;
-
-  try {
-    console.log(
-      "Trying to login with:",
-      process.env.SMTP_USER,
-      process.env.SMTP_PASS?.length
-    );
-
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
-
-    await transporter.sendMail({
-      from: `"${name}" <${email}>`,
-      to: process.env.SMTP_USER,
-      subject: "New Contact Form Submission From " + name,
-      text: `
-    Name: ${name}
-    Email: ${email}
-    Message: ${message}
-  `,
-      html: `
-    <h3>New Contact Form Submission</h3>
-    <p><b>Name:</b> ${name}</p>
-    <p><b>Email:</b> ${email}</p>
-    <p><b>Message:</b> ${message}</p>
-  `,
-    });
-    await transporter.sendMail({
-      from: process.env.SMTP_USER,
-      to: `<${email}>`,
-      subject: "Nandhavanam - Replying to your Query",
-      text: `
-    Name: ${name}
-    Email: ${email}
-    Message: ${message}
-  `,
-      html: `
-    <h3>Thanks for your Request</h3>
-    <p>Check the Details</p>
-    <p><b>Name:</b> ${name}</p>
-    <p><b>Email:</b> ${email}</p>
-    <p><b>Message:</b> ${message}</p>
-    <p>We will get back to you soon.</p>
-  `,
-    });
-    res
-      .status(200)
-      .json({ success: true, message: "Email sent successfully!" });
-  } catch (err) {
-    console.error("Mailer error:", err);
-    res.status(500).json({ success: false, error: err.message });
-  }
+const contactSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  mobile: String,
+  message: String,
 });
 
-// google gemini ai 
-app.post("/generate", async (req, res) => {
-  const { prompt } = req.body; 
+app.post("/send", async (req, res) => {
+  const { name, email, mobile, message } = req.body;
   try {
-    const response = await fetch('https://gemini.googleapis.com/v1/models/gemini-1.5-pro-preview:generateText', {
-      method: 'POST',       
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.GOOGLE_API_KEY}`
-      },
-      body: JSON.stringify({
-        prompt: {
-          text: prompt,
-          context: "You are a helpful assistant."
+    const newContact = new mongoose.model("Contact", contactSchema)({
+      name,
+      email,
+      mobile,
+      message,
+    });
+    await newContact.save();
+    res.status(201).json(newContact);
+    res.send("Message received");
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Server Error");
+  }
+  
+  // add nodemailer logic here
+ 
+});
+
+// google gemini ai
+app.post("/generate", async (req, res) => {
+  const { prompt } = req.body;
+  try {
+    const response = await fetch(
+      "https://gemini.googleapis.com/v1/models/gemini-1.5-pro-preview:generateText",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.GOOGLE_API_KEY}`,
         },
-        maxOutputTokens: 256,
-        temperature: 0.7
-      })
-    }); 
+        body: JSON.stringify({
+          prompt: {
+            text: prompt,
+            context: "You are a helpful assistant.",
+          },
+          maxOutputTokens: 256,
+          temperature: 0.7,
+        }),
+      }
+    );
     const data = await response.json();
     res.status(200).json(data);
   } catch (err) {
     console.error("AI Generation error:", err);
     res.status(500).json({ success: false, error: err.message });
-    
   }
-} );
-
-
-
+});
 
 app.listen(5000, () =>
   console.log("🚀 Server running on http://localhost:5000")

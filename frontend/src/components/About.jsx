@@ -47,11 +47,10 @@ export default function About() {
         </p>
 
         <div className="p-10">
-          <img
-            src="https://res.cloudinary.com/delx0bz9t/image/upload/v1762258173/WhatsApp_Image_2025-11-04_at_2.09.37_PM_pgy0gg.jpg"
-            alt="Nandhavanam Event"
-            className="rounded-2xl shadow-lg border border-gray-200 mx-auto w-full max-w-2xl"
-          />
+          <blockquote className="italic text-center text-gray-800 border-l-4 border-yellow-400 pl-6">
+            " Registered under the Indian Embassy - INDEMB/KWT/ASSN/245 ,
+            Kuwait on 12th August 2013 "
+          </blockquote>
         </div>
       </motion.section>
 

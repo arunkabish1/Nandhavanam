@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import bg from "../assets/1.mp4";
+import bg from "../assets/2.mp4";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
@@ -17,7 +17,7 @@ export default function Homepage() {
   const [pastEvents, setPastEvents] = useState([]);
 
   useEffect(() => {
-    // Simulate slight delay to allow loader animation
+    
     const timer = setTimeout(() => {
       fetch("https://nandhavanam-backend.onrender.com/notifications")
         .then((res) => {
@@ -194,7 +194,7 @@ export default function Homepage() {
                     <img
                       src={n.image}
                       alt={n.event}
-                      className="w-full h-56 object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="w-full object-scale-down transition-transform duration-500 group-hover:scale-105"
                     />
                   )}
                   {n.date && (
@@ -289,7 +289,7 @@ export default function Homepage() {
                   <img
                     src={selectedEvent.image}
                     alt={selectedEvent.event}
-                    className="w-full object-cover rounded-2xl mb-4"
+                    className="w-full  object-cover shadow-xl rounded-2xl mb-4"
                   />
                 )}
                 <h2 className="text-xl sm:text-2xl font-bold mb-3 p-2 text-center text-gray-900">

@@ -30,12 +30,13 @@ export default function Contact() {
     setErrorMsg(null);
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
+    const timeout = setTimeout(() => controller.abort(), 20000);
 
     const formData = new FormData(form.current);
     const data = {
       name: formData.get("user_name"),
       email: formData.get("user_email"),
+      mobile: formData.get("mobile"),
       message: formData.get("message"),
     };
 
@@ -162,6 +163,22 @@ export default function Contact() {
                 name="user_name"
                 type="text"
                 placeholder="John Doe"
+                required
+              />
+            </div>
+             <div>
+              <label
+                className="block text-sm font-semibold text-gray-700 mb-2"
+                htmlFor="mobile"
+              >
+                Mobile Number
+              </label>
+              <input
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-200 outline-none transition"
+                id="mobile"
+                name="mobile"
+                type="tel"
+                placeholder="+965 1234 5678"
                 required
               />
             </div>
