@@ -74,7 +74,7 @@ export default function Contact() {
 
         <div className="relative z-10 max-w-md space-y-6">
           <img
-            src={logo} 
+            src={logo}
             className="rounded-full mx-auto border-4 border-white shadow-lg w-40 h-40 object-cover"
             alt="Nandhavanam Logo"
           />
@@ -135,8 +135,7 @@ export default function Contact() {
           </div>
 
           <p className="text-sm text-blue-200 mt-12">
-            © {new Date().getFullYear()} Nandhavanam 
-            
+            © {new Date().getFullYear()} Nandhavanam
           </p>
         </div>
       </div>
@@ -166,7 +165,7 @@ export default function Contact() {
                 required
               />
             </div>
-             <div>
+            <div>
               <label
                 className="block text-sm font-semibold text-gray-700 mb-2"
                 htmlFor="mobile"

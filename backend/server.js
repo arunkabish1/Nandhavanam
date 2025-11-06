@@ -199,16 +199,20 @@ const contactSchema = new mongoose.Schema({
   email: String,
   mobile: String,
   message: String,
+  respond: { type: Boolean, default: false },
 });
 
 app.post("/send", async (req, res) => {
   const { name, email, mobile, message } = req.body;
+  const respond = false;
   try {
     const newContact = new mongoose.model("Contact", contactSchema)({
       name,
       email,
       mobile,
       message,
+      respond,
+      
     });
     await newContact.save();
     res.status(201).json(newContact);
@@ -251,6 +255,41 @@ app.post("/generate", async (req, res) => {
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
+
+// contact form data fetch for admin dashboard
+
+app.get("/contacts",async(req,res)=>{
+   try {
+    const data = await Contacts.find();
+    res.json(data);
+    console.log(data);
+  } catch (error) {
+    console.log(error);
+  }
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 app.listen(5000, () =>
   console.log("🚀 Server running on http://localhost:5000")
