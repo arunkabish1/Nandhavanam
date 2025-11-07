@@ -8,7 +8,7 @@ export default function Gallery() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch("https://nandhavanam-backend.onrender.com/members")
+    fetch(`${import.meta.env.VITE_API_URL}/members`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to fetch members");
         return res.json();

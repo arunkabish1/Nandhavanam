@@ -19,7 +19,7 @@ const StatusMessage = ({ message, type }) => {
 export default function AdminDash() {
   const handleChange = async (id, respond) => {
     try {
-      const res = await fetch(`http://localhost:5000/contacts/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/contacts/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ respond: true }),
@@ -80,7 +80,8 @@ export default function AdminDash() {
     const fetchContactData = async () => {
       try {
         const res = await fetch(
-          "http://localhost:5000/contacts"
+          // "http://localhost:5000/contacts"
+          `${import.meta.env.VITE_API_URL}/contacts`
           // "https://nandhavanam-backend.onrender.com/contacts",
         );
         const data = await res.json();
@@ -236,7 +237,7 @@ export default function AdminDash() {
 
     try {
       const res = await fetch(
-        "https://nandhavanam-backend.onrender.com/gallery",
+        `${import.meta.env.VITE_API_URL}//gallery`,
         { method: "POST", body: formData }
       );
       const data = await res.json();
@@ -271,7 +272,7 @@ export default function AdminDash() {
     console.log(eventData);
     try {
       const res = await fetch(
-        "https://nandhavanam-backend.onrender.com/events",
+        `${import.meta.env.VITE_API_URL}/events`,
         { method: "POST", body: formData }
       );
       const data = await res.json();
@@ -310,7 +311,7 @@ export default function AdminDash() {
 
     try {
       const res = await fetch(
-        "https://nandhavanam-backend.onrender.com/users",
+        `${import.meta.env.VITE_API_URL}/users`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

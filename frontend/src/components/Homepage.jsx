@@ -19,7 +19,7 @@ export default function Homepage() {
   useEffect(() => {
     
     const timer = setTimeout(() => {
-      fetch("https://nandhavanam-backend.onrender.com/notifications")
+      fetch(`${import.meta.env.VITE_API_URL}/notifications`)
         .then((res) => {
           if (!res.ok) throw new Error("Failed to fetch notifications");
           return res.json();
