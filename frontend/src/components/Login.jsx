@@ -11,7 +11,7 @@ export default function Login() {
 
   try{
     setLoading(true);
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/login`, {
+    const response = await fetch("https://api.nfakuwait.com/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

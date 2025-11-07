@@ -202,7 +202,7 @@ app.get("/members", async (req, res) => {
 
 const contactSchema = new mongoose.Schema({
   name: String,
-
+  mobile: String,
   email: String,
   message: String,
   respond: { type: Boolean, default: false },
@@ -210,13 +210,14 @@ const contactSchema = new mongoose.Schema({
 const Contact = mongoose.model("Contact", contactSchema);
 
 app.post("/contacts", async (req, res) => {
-  const { name, email, message } = req.body;
+  const { name, email,mobile, message } = req.body;
   const respond = false;
   console.log(name);
   try {
     const newContact = new Contact({
       name,
       email,
+      mobile,
       message,
       respond,
     });
