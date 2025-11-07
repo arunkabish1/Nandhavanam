@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import AdminModal from "./AdminModal.jsx";
 
 // A reusable component for displaying submission status messages
@@ -17,25 +16,7 @@ const StatusMessage = ({ message, type }) => {
 };
 
 export default function AdminDash() {
-  const handleChange = async (id, respond) => {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/contacts/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ respond: true }),
-      });
-
-      const updated = await res.json();
-      console.log(updated);
-      setContactdata((prev) =>
-        prev.map((c) => (c._id === id ? { ...c, respond: true } : c))
-      );
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  // State for the "Add Member" form
+  // --- State ---
   const [memberData, setMemberData] = useState({
     name: "",
     position: "",
@@ -46,11 +27,11 @@ export default function AdminDash() {
   const [memberStatus, setMemberStatus] = useState({ message: "", type: "" });
   const [isSubmittingMember, setIsSubmittingMember] = useState(false);
   const [isGeneratingBio, setIsGeneratingBio] = useState(false);
+
   const [contactdata, setContactdata] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const [selectedContact, setSelectedContact] = useState(null);
 
-  // State for the "Add Event" form
   const [eventData, setEventData] = useState({
     event: "",
     post: "",
@@ -64,7 +45,6 @@ export default function AdminDash() {
   const [isSubmittingEvent, setIsSubmittingEvent] = useState(false);
   const [isGeneratingPost, setIsGeneratingPost] = useState(false);
 
-  // State for the "Add Role" form
   const [roleData, setRoleData] = useState({
     name: "",
     email: "",
@@ -74,83 +54,64 @@ export default function AdminDash() {
   const [roleStatus, setRoleStatus] = useState({ message: "", type: "" });
   const [isSubmittingRole, setIsSubmittingRole] = useState(false);
 
-  // contact data fetch
+  // --- Helpers ---
+  const handleInputChange = (setter) => (e) => {
+    const { name, value, type, checked } = e.target;
+    setter((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
 
+  const handleFileChange = (setter) => (e) => {
+    setter(e.target.files[0] || null);
+  };
+
+  // Mark a contact as responded
+  const handleChange = async (id) => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/contacts/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ respond: true }),
+      });
+      const updated = await res.json();
+      setContactdata((prev) =>
+        prev.map((c) => (c._id === id ? { ...c, respond: true } : c))
+      );
+      console.log("Updated contact:", updated);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // --- Data fetch ---
   useEffect(() => {
     const fetchContactData = async () => {
       try {
-        const res = await fetch(
-          // "http://localhost:5000/contacts"
-          `${import.meta.env.VITE_API_URL}/contacts`
-          // "https://nandhavanam-backend.onrender.com/contacts",
-        );
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/contacts`);
         const data = await res.json();
-        setContactdata(data);
-        console.log(data);
+        setContactdata(data || []);
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     };
     fetchContactData();
   }, []);
 
-  // --- Gemini API Integration ---
-
-  const callGeminiAPI = async (prompt) => {
-    const apiKey = "AIzaSyBy7Dvw0sxN2zK-h-nBVeAX7PD5YwcnkVQ" || "ak";
-
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-
-    const payload = {
-      contents: [{ parts: [{ text: prompt }] }],
-    };
-
-    let response;
-    let delay = 1000;
-    for (let i = 0; i < 5; i++) {
-      try {
-        response = await fetch(apiUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-
-        if (response.ok) {
-          const result = await response.json();
-          const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (text) {
-            return text;
-          } else {
-            throw new Error(
-              "Failed to extract generated text from the API response."
-            );
-          }
-        } else if (response.status === 429 || response.status >= 500) {
-          // Throttled or server error, wait and retry
-          await new Promise((resolve) => setTimeout(resolve, delay));
-          delay *= 2;
-          continue;
-        } else {
-          const errorData = await response.json();
-          throw new Error(
-            errorData.error?.message ||
-              `API request failed with status ${response.status}`
-          );
-        }
-      } catch (error) {
-        if (i === 4) {
-          // Last attempt
-          console.error(
-            "Gemini API call failed after multiple retries:",
-            error
-          );
-          throw error;
-        }
-      }
+  // --- AI helpers (call backend, do NOT expose keys in client) ---
+  const callAI = async (prompt) => {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/generate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `AI request failed (${res.status})`);
     }
-    throw new Error(
-      "The request to the Gemini API failed after multiple retries."
-    );
+    const json = await res.json();
+    return json.text || "";
   };
 
   const handleGenerateEventPost = async () => {
@@ -162,18 +123,12 @@ export default function AdminDash() {
       return;
     }
     setIsGeneratingPost(true);
-    setEventStatus({
-      message: "Generating your event post with AI...",
-      type: "info",
-    });
+    setEventStatus({ message: "Generating your event post with AI...", type: "info" });
     const prompt = `Write a professional and engaging event announcement post for an event called "${eventData.event}". The tone should be exciting and welcoming. Include placeholders like [Date], [Time], [Location]. Keep it concise and informative. Only 1 response.`;
     try {
-      const generatedPost = await callGeminiAPI(prompt);
+      const generatedPost = await callAI(prompt);
       setEventData((prev) => ({ ...prev, post: generatedPost }));
-      setEventStatus({
-        message: "AI-generated post is ready!",
-        type: "success",
-      });
+      setEventStatus({ message: "AI-generated post is ready!", type: "success" });
     } catch (error) {
       setEventStatus({ message: error.message, type: "error" });
     } finally {
@@ -190,18 +145,12 @@ export default function AdminDash() {
       return;
     }
     setIsGeneratingBio(true);
-    setMemberStatus({
-      message: "Generating member bio with AI...",
-      type: "info",
-    });
+    setMemberStatus({ message: "Generating member bio with AI...", type: "info" });
     const prompt = `Write a short, professional, and friendly bio for a new team gallery member. Their name is ${memberData.name} and their position is ${memberData.position}. The bio should be approximately 2-4 sentences and highlight their role in a positive way.`;
     try {
-      const generatedBio = await callGeminiAPI(prompt);
+      const generatedBio = await callAI(prompt);
       setMemberData((prev) => ({ ...prev, description: generatedBio }));
-      setMemberStatus({
-        message: "AI-generated bio is ready!",
-        type: "success",
-      });
+      setMemberStatus({ message: "AI-generated bio is ready!", type: "success" });
     } catch (error) {
       setMemberStatus({ message: error.message, type: "error" });
     } finally {
@@ -209,20 +158,7 @@ export default function AdminDash() {
     }
   };
 
-  // --- Original Form Handlers ---
-
-  const handleInputChange = (setter) => (e) => {
-    const { name, value, type, checked } = e.target;
-    setter((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
-  const handleFileChange = (setter) => (e) => {
-    setter(e.target.files[0]);
-  };
-
+  // --- Submit handlers ---
   const addMember = async (e) => {
     e.preventDefault();
     setIsSubmittingMember(true);
@@ -236,22 +172,16 @@ export default function AdminDash() {
     if (memberImage) formData.append("image", memberImage);
 
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}//gallery`,
-        { method: "POST", body: formData }
-      );
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/gallery`, {
+        method: "POST",
+        body: formData,
+      });
       const data = await res.json();
-      if (res.ok) {
-        setMemberStatus({
-          message: "Gallery member added successfully!",
-          type: "success",
-        });
-        e.target.reset();
-        setMemberData({ name: "", position: "", email: "", description: "" });
-        setMemberImage(null);
-      } else {
-        throw new Error(data.err || "Failed to add member.");
-      }
+      if (!res.ok) throw new Error(data.err || "Failed to add member.");
+      setMemberStatus({ message: "Gallery member added successfully!", type: "success" });
+      e.target.reset();
+      setMemberData({ name: "", position: "", email: "", description: "" });
+      setMemberImage(null);
     } catch (err) {
       setMemberStatus({ message: err.message, type: "error" });
     } finally {
@@ -265,35 +195,20 @@ export default function AdminDash() {
     setEventStatus({ message: "", type: "" });
 
     const formData = new FormData();
-    Object.keys(eventData).forEach((key) =>
-      formData.append(key, eventData[key])
-    );
+    Object.entries(eventData).forEach(([k, v]) => formData.append(k, v));
     if (eventImage) formData.append("image", eventImage);
-    console.log(eventData);
+
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/events`,
-        { method: "POST", body: formData }
-      );
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/events`, {
+        method: "POST",
+        body: formData,
+      });
       const data = await res.json();
-      if (res.ok) {
-        setEventStatus({
-          message: "Event added successfully!",
-          type: "success",
-        });
-        e.target.reset();
-        setEventData({
-          event: "",
-          post: "",
-          sms: false,
-          mail: false,
-          home: false,
-          date: "",
-        });
-        setEventImage(null);
-      } else {
-        throw new Error(data.error || "Something went wrong.");
-      }
+      if (!res.ok) throw new Error(data.error || "Something went wrong.");
+      setEventStatus({ message: "Event added successfully!", type: "success" });
+      e.target.reset();
+      setEventData({ event: "", post: "", sms: false, mail: false, home: false, date: "" });
+      setEventImage(null);
     } catch (err) {
       setEventStatus({ message: err.message, type: "error" });
     } finally {
@@ -310,27 +225,21 @@ export default function AdminDash() {
     const payload = { ...roleData, password };
 
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/users`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
-      if (res.ok) {
-        setRoleStatus({
-          message: `${roleData.name} created as ${roleData.role} successfully.`,
-          type: "success",
-        });
-        e.target.reset();
-        setRoleData({ name: "", email: "", mobile: "", role: "" });
-      } else {
-        const data = await res.json();
-        throw new Error(
-          data.error || `${roleData.name} not created as ${roleData.role}.`
-        );
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/users`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || `${roleData.name} not created as ${roleData.role}.`);
       }
+      setRoleStatus({
+        message: `${roleData.name} created as ${roleData.role} successfully.`,
+        type: "success",
+      });
+      e.target.reset();
+      setRoleData({ name: "", email: "", mobile: "", role: "" });
     } catch (err) {
       setRoleStatus({ message: err.message, type: "error" });
     } finally {
@@ -350,14 +259,10 @@ export default function AdminDash() {
             {/* User Management */}
             <div className="bg-white p-6 rounded-lg shadow-md w-full lg:w-1/3">
               <h2 className="text-xl font-semibold mb-2">User Management</h2>
-              <p className="text-gray-500 mb-4">
-                Manage users, roles, and permissions.
-              </p>
+              <p className="text-gray-500 mb-4">Manage users, roles, and permissions.</p>
               <form onSubmit={addRole} method="POST" className="space-y-4">
                 <div className="flex flex-col">
-                  <label htmlFor="name" className="font-medium mb-1">
-                    Name
-                  </label>
+                  <label htmlFor="name" className="font-medium mb-1">Name</label>
                   <input
                     className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-cyan-600 outline-none"
                     type="text"
@@ -369,9 +274,7 @@ export default function AdminDash() {
                   />
                 </div>
                 <div className="flex flex-col">
-                  <label htmlFor="email_role" className="font-medium mb-1">
-                    Email
-                  </label>
+                  <label htmlFor="email_role" className="font-medium mb-1">Email</label>
                   <input
                     className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-cyan-600 outline-none"
                     type="email"
@@ -386,30 +289,15 @@ export default function AdminDash() {
                   <label className="font-medium mb-1 block">Role</label>
                   <div className="flex gap-4">
                     <label className="flex items-center gap-2">
-                      <input
-                        type="radio"
-                        name="role"
-                        value="admin"
-                        onChange={handleInputChange(setRoleData)}
-                        required
-                      />{" "}
-                      Admin
+                      <input type="radio" name="role" value="admin" onChange={handleInputChange(setRoleData)} required /> Admin
                     </label>
                     <label className="flex items-center gap-2">
-                      <input
-                        type="radio"
-                        name="role"
-                        value="user"
-                        onChange={handleInputChange(setRoleData)}
-                      />{" "}
-                      User
+                      <input type="radio" name="role" value="user" onChange={handleInputChange(setRoleData)} /> User
                     </label>
                   </div>
                 </div>
                 <div className="flex flex-col">
-                  <label htmlFor="mobile" className="font-medium mb-1">
-                    Mobile Number
-                  </label>
+                  <label htmlFor="mobile" className="font-medium mb-1">Mobile Number</label>
                   <input
                     className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-cyan-600 outline-none"
                     type="text"
@@ -427,24 +315,17 @@ export default function AdminDash() {
                 >
                   {isSubmittingRole ? "Adding User..." : "Add User"}
                 </button>
-                <StatusMessage
-                  message={roleStatus.message}
-                  type={roleStatus.type}
-                />
+                <StatusMessage message={roleStatus.message} type={roleStatus.type} />
               </form>
             </div>
 
             {/* Events */}
             <div className="bg-white p-6 rounded-lg shadow-md w-full lg:w-2/3">
               <h2 className="text-xl font-semibold mb-2">Add New Events</h2>
-              <p className="text-gray-500 mb-4">
-                Manage Events and Notifications.
-              </p>
+              <p className="text-gray-500 mb-4">Manage Events and Notifications.</p>
               <form onSubmit={addEvent} className="space-y-4">
                 <div className="flex flex-col">
-                  <label htmlFor="event" className="font-medium mb-1">
-                    Name of the Event
-                  </label>
+                  <label htmlFor="event" className="font-medium mb-1">Name of the Event</label>
                   <input
                     className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-cyan-600 outline-none"
                     type="text"
@@ -457,17 +338,14 @@ export default function AdminDash() {
                 </div>
                 <div className="flex flex-col">
                   <div className="flex justify-between items-center mb-1">
-                    <label htmlFor="post" className="font-medium">
-                      Event Post
-                    </label>
+                    <label htmlFor="post" className="font-medium">Event Post</label>
                     <button
                       type="button"
                       onClick={handleGenerateEventPost}
                       disabled={isGeneratingPost || !eventData.event}
                       className="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded-full hover:bg-purple-200 transition disabled:bg-gray-200 disabled:text-gray-500 disabled:cursor-not-allowed flex items-center gap-1"
                     >
-                      ✨{" "}
-                      {isGeneratingPost ? "Generating..." : "Generate with AI"}
+                      ✨ {isGeneratingPost ? "Generating..." : "Generate with AI"}
                     </button>
                   </div>
                   <textarea
@@ -477,52 +355,26 @@ export default function AdminDash() {
                     value={eventData.post}
                     onChange={handleInputChange(setEventData)}
                     required
-                  ></textarea>
+                  />
                 </div>
+
                 <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 w-full">
-                  <h3 className="text-md font-semibold text-gray-800 mb-3">
-                    Notification Via:
-                  </h3>
+                  <h3 className="text-md font-semibold text-gray-800 mb-3">Notification Via:</h3>
                   <div className="flex flex-wrap gap-x-6 gap-y-2 items-center">
                     <label className="flex items-center gap-2 cursor-pointer text-gray-700">
-                      <input
-                        type="checkbox"
-                        name="mail"
-                        id="mail"
-                        checked={eventData.mail}
-                        onChange={handleInputChange(setEventData)}
-                        className="w-5 h-5 accent-cyan-600 rounded"
-                      />{" "}
-                      Mail to Users
+                      <input type="checkbox" name="mail" id="mail" checked={eventData.mail} onChange={handleInputChange(setEventData)} className="w-5 h-5 accent-cyan-600 rounded" /> Mail to Users
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer text-gray-700">
-                      <input
-                        type="checkbox"
-                        name="sms"
-                        id="sms"
-                        checked={eventData.sms}
-                        onChange={handleInputChange(setEventData)}
-                        className="w-5 h-5 accent-cyan-600 rounded"
-                      />{" "}
-                      Whatsapp Message to Users
+                      <input type="checkbox" name="sms" id="sms" checked={eventData.sms} onChange={handleInputChange(setEventData)} className="w-5 h-5 accent-cyan-600 rounded" /> Whatsapp Message to Users
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer text-gray-700">
-                      <input
-                        type="checkbox"
-                        name="home"
-                        id="home"
-                        checked={eventData.home}
-                        onChange={handleInputChange(setEventData)}
-                        className="w-5 h-5 accent-cyan-600 rounded"
-                      />{" "}
-                      Post in Homepage
+                      <input type="checkbox" name="home" id="home" checked={eventData.home} onChange={handleInputChange(setEventData)} className="w-5 h-5 accent-cyan-600 rounded" /> Post in Homepage
                     </label>
                   </div>
                 </div>
+
                 <div>
-                  <label htmlFor="eventImage" className="font-medium mb-1">
-                    Poster Image
-                  </label>
+                  <label htmlFor="eventImage" className="font-medium mb-1">Poster Image</label>
                   <input
                     className="w-full border border-gray-300 p-2 rounded file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100"
                     type="file"
@@ -533,11 +385,9 @@ export default function AdminDash() {
                     required
                   />
                 </div>
+
                 <div>
-                  {/* Date Input */}
-                  <label htmlFor="eventDate" className="font-medium mb-1">
-                    Event Date
-                  </label>
+                  <label htmlFor="eventDate" className="font-medium mb-1">Event Date</label>
                   <input
                     className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-cyan-600 outline-none w-full"
                     type="date"
@@ -556,284 +406,225 @@ export default function AdminDash() {
                 >
                   {isSubmittingEvent ? "Adding Event..." : "Add Event"}
                 </button>
-                <StatusMessage
-                  message={eventStatus.message}
-                  type={eventStatus.type}
-                />
+                <StatusMessage message={eventStatus.message} type={eventStatus.type} />
               </form>
             </div>
           </div>
 
           {/* Gallery Members */}
           <div className="bg-white p-6 rounded-lg shadow-md mt-8">
-            <h2 className="text-center text-xl font-semibold mb-2">
-              Gallery Members
-            </h2>
-            <p className="text-center text-gray-500 mb-6">
-              Add or remove Gallery Members
-            </p>
-            <div>
-              <form
-                method="POST"
-                onSubmit={addMember}
-                className="space-y-4 max-w-2xl mx-auto"
-              >
-                <div className="flex flex-col">
-                  <label htmlFor="membername" className="font-medium mb-1">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    id="membername"
-                    value={memberData.name}
-                    onChange={handleInputChange(setMemberData)}
-                    required
-                    className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-cyan-600 outline-none"
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <label htmlFor="email_member" className="font-medium mb-1">
-                    Email Id
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    id="email_member"
-                    value={memberData.email}
-                    onChange={handleInputChange(setMemberData)}
-                    className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-cyan-600 outline-none"
-                    required
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <label htmlFor="position" className="font-medium mb-1">
-                    Position
-                  </label>
-                  <input
-                    type="text"
-                    name="position"
-                    id="position"
-                    value={memberData.position}
-                    onChange={handleInputChange(setMemberData)}
-                    className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-cyan-600 outline-none"
-                    required
-                  />
-                </div>
-                <div className="flex flex-col">
-                  <div className="flex justify-between items-center mb-1">
-                    <label htmlFor="description" className="font-medium">
-                      Description
-                    </label>
-                    <button
-                      type="button"
-                      onClick={handleGenerateMemberBio}
-                      disabled={
-                        isGeneratingBio ||
-                        !memberData.name ||
-                        !memberData.position
-                      }
-                      className="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded-full hover:bg-purple-200 transition disabled:bg-gray-200 disabled:text-gray-500 disabled:cursor-not-allowed flex items-center gap-1"
-                    >
-                      ✨{" "}
-                      {isGeneratingBio
-                        ? "Generating..."
-                        : "Generate Bio with AI"}
-                    </button>
-                  </div>
-                  <textarea
-                    name="description"
-                    id="description"
-                    value={memberData.description}
-                    onChange={handleInputChange(setMemberData)}
-                    className="border min-h-32 border-gray-300 p-2 rounded focus:ring-2 focus:ring-cyan-600 outline-none"
-                    required
-                  ></textarea>
-                </div>
-                <div className="flex flex-col">
-                  <label htmlFor="memberImage" className="font-medium mb-1">
-                    Image
-                  </label>
-                  <input
-                    type="file"
-                    name="image"
-                    id="memberImage"
-                    accept="image/png,image/jpeg,image/jpg"
-                    onChange={handleFileChange(setMemberImage)}
-                    className="w-full border border-gray-300 p-2 rounded file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="w-full bg-cyan-900 text-white px-6 py-2 rounded-3xl hover:bg-cyan-700 transition disabled:bg-gray-400"
-                  disabled={isSubmittingMember}
-                >
-                  {isSubmittingMember
-                    ? "Adding Member..."
-                    : "Add Gallery Member"}
-                </button>
-                <StatusMessage
-                  message={memberStatus.message}
-                  type={memberStatus.type}
+            <h2 className="text-center text-xl font-semibold mb-2">Gallery Members</h2>
+            <p className="text-center text-gray-500 mb-6">Add or remove Gallery Members</p>
+
+            <form method="POST" onSubmit={addMember} className="space-y-4 max-w-2xl mx-auto">
+              <div className="flex flex-col">
+                <label htmlFor="membername" className="font-medium mb-1">Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  id="membername"
+                  value={memberData.name}
+                  onChange={handleInputChange(setMemberData)}
+                  required
+                  className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-cyan-600 outline-none"
                 />
-              </form>
-            </div>
+              </div>
+              <div className="flex flex-col">
+                <label htmlFor="email_member" className="font-medium mb-1">Email Id</label>
+                <input
+                  type="email"
+                  name="email"
+                  id="email_member"
+                  value={memberData.email}
+                  onChange={handleInputChange(setMemberData)}
+                  className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-cyan-600 outline-none"
+                  required
+                />
+              </div>
+              <div className="flex flex-col">
+                <label htmlFor="position" className="font-medium mb-1">Position</label>
+                <input
+                  type="text"
+                  name="position"
+                  id="position"
+                  value={memberData.position}
+                  onChange={handleInputChange(setMemberData)}
+                  className="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-cyan-600 outline-none"
+                  required
+                />
+              </div>
+              <div className="flex flex-col">
+                <div className="flex justify-between items-center mb-1">
+                  <label htmlFor="description" className="font-medium">Description</label>
+                  <button
+                    type="button"
+                    onClick={handleGenerateMemberBio}
+                    disabled={isGeneratingBio || !memberData.name || !memberData.position}
+                    className="text-sm bg-purple-100 text-purple-700 px-3 py-1 rounded-full hover:bg-purple-200 transition disabled:bg-gray-200 disabled:text-gray-500 disabled:cursor-not-allowed flex items-center gap-1"
+                  >
+                    ✨ {isGeneratingBio ? "Generating..." : "Generate Bio with AI"}
+                  </button>
+                </div>
+                <textarea
+                  name="description"
+                  id="description"
+                  value={memberData.description}
+                  onChange={handleInputChange(setMemberData)}
+                  className="border min-h-32 border-gray-300 p-2 rounded focus:ring-2 focus:ring-cyan-600 outline-none"
+                  required
+                />
+              </div>
+              <div className="flex flex-col">
+                <label htmlFor="memberImage" className="font-medium mb-1">Image</label>
+                <input
+                  type="file"
+                  name="image"
+                  id="memberImage"
+                  accept="image/png,image/jpeg,image/jpg"
+                  onChange={handleFileChange(setMemberImage)}
+                  className="w-full border border-gray-300 p-2 rounded file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-cyan-50 file:text-cyan-700 hover:file:bg-cyan-100"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-cyan-900 text-white px-6 py-2 rounded-3xl hover:bg-cyan-700 transition disabled:bg-gray-400"
+                disabled={isSubmittingMember}
+              >
+                {isSubmittingMember ? "Adding Member..." : "Add Gallery Member"}
+              </button>
+              <StatusMessage message={memberStatus.message} type={memberStatus.type} />
+            </form>
           </div>
 
-          <div className="">
-            {/* Additional admin functionalities can be added here */}
-            <div className="bg-white p-6 rounded-lg shadow-md mt-8">
-              <h2 className="text-center font-semibold text-lg ">
-                Contact Request and Messages
-              </h2>
-              <p className="text-center text-gray-500 mb-4">
-                View and respond to contact form submissions.
-              </p>
-              <div>
-                {contactdata.length === 0 ? (
-                  <p className="text-center text-gray-500">
-                    No contact requests available.
-                  </p>
-                ) : (
-                  <>
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full border border-gray-300">
-                        <thead className="bg-gray-50">
-                          <tr className=" ">
-                            <th className="px-4 py-2 border-b border-gray-300 text-left text-sm font-medium text-gray-700">
-                              Name
-                            </th>
-                            <th className="px-4 py-2 border-b border-gray-300 text-left text-sm font-medium text-gray-700">
-                              Email
-                            </th>
-                            <th className="px-4 py-2 border-b border-gray-300 text-left text-sm font-medium text-gray-700">
-                              Message
-                            </th>
-                            <th className="px-4 py-2 border-b border-gray-300 text-left text-sm font-medium text-gray-700">
-                              Mobile Number
-                            </th>
-                            <th className="px-4 py-2 border-b border-gray-300 text-left text-sm font-medium text-gray-700">
-                              Respond  {contactdata.length > 0 && `(${contactdata.filter(c => !c.respond).length} pending)`}
-                            </th>
+          {/* Contacts */}
+          <div className="bg-white p-6 rounded-lg shadow-md mt-8">
+            <h2 className="text-center font-semibold text-lg ">Contact Request and Messages</h2>
+            <p className="text-center text-gray-500 mb-4">View and respond to contact form submissions.</p>
+
+            <div>
+              {contactdata.length === 0 ? (
+                <p className="text-center text-gray-500">No contact requests available.</p>
+              ) : (
+                <>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full border border-gray-300">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-2 border-b border-gray-300 text-left text-sm font-medium text-gray-700">
+                            Name
+                          </th>
+                          <th className="px-4 py-2 border-b border-gray-300 text-left text-sm font-medium text-gray-700">
+                            Email
+                          </th>
+                          <th className="px-4 py-2 border-b border-gray-300 text-left text-sm font-medium text-gray-700">
+                            Message
+                          </th>
+                          <th className="px-4 py-2 border-b border-gray-300 text-left text-sm font-medium text-gray-700">
+                            Mobile Number
+                          </th>
+                          <th className="px-4 py-2 border-b border-gray-300 text-left text-sm font-medium text-gray-700">
+                            Respond {contactdata.length > 0 && `(${contactdata.filter(c => !c.respond).length} pending)`}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="cursor-pointer hover:bg-gray-50">
+                        {contactdata.map((contact) => (
+                          <tr
+                            key={contact._id}
+                            className="hover:bg-gray-100"
+                            onClick={() => {
+                              setSelectedContact(contact);
+                              setOpenModal(true);
+                            }}
+                          >
+                            <td className="px-4 py-4 border-b border-gray-300 text-sm text-gray-800">
+                              {contact.name}
+                            </td>
+                            <td className="px-4 py-2 border-b border-gray-300 text-sm text-gray-800">
+                              {contact.email}
+                            </td>
+                            <td className="px-4 py-2 border-b border-gray-300 text-sm text-gray-800">
+                              {contact.message}
+                            </td>
+                            <td className="px-4 py-2 border-b border-gray-300 text-sm text-gray-800">
+                              {contact.mobile}
+                            </td>
+                            <td className="px-2 py-2 border-b border-gray-300">
+                              <button
+                                className={`px-2 py-1 rounded-lg font-semibold  ${
+                                  contact.respond ? "bg-green-300" : "bg-red-500 text-white"
+                                }`}
+                              >
+                                {contact.respond ? "Response Sent" : "⚠️  Response Needed"}
+                              </button>
+                            </td>
                           </tr>
-                        </thead>
-                        <tbody className="cursor-pointer hover:bg-gray-50">
-                          {contactdata.map((contact) => (
-                            <tr
-                              key={contact.id}
-                              className="hover:bg-gray-100 "
-                              onClick={() => {
-                                setSelectedContact(contact);
-                                setOpenModal(true);
-                              }}
-                            >
-                              <td className="px-4 py-4 border-b  border-gray-300 text-sm text-gray-800">
-                                {contact.name}
-                              </td>
-                              <td className="px-4 py-2 border-b border-gray-300 text-sm text-gray-800">
-                                {contact.email}
-                              </td>
-                              <td className="px-4 py-2 border-b border-gray-300 text-sm text-gray-800">
-                                {" "}
-                                {contact.mobile}
-                              </td>
-                              <td className="px-4 py-2 border-b border-gray-300 text-sm text-gray-800">
-                                {contact.message}
-                              </td>
-                              <td>
-                                <button
-                                  className={`px-2 py-1 rounded-lg font-semibold  ${
-                                    contact.respond
-                                      ? "bg-green-300"
-                                      : "bg-red-500"
-                                  }`}
-                                >
-                                  {" "}
-                                  {contact.respond
-                                    ? "Response Sent"
-                                    : "⚠️  Response Needed"}{" "}
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
 
                   <AdminModal isOpen={openModal} onClose={() => setOpenModal(false)}>
-  {selectedContact && (
-    <div className="space-y-4 text-gray-800">
+                    {selectedContact && (
+                      <div className="space-y-4 text-gray-800">
+                        <h2 className="text-2xl font-bold text-cyan-900 border-b pb-2">Contact Details</h2>
 
-      <h2 className="text-2xl font-bold text-cyan-900 border-b pb-2">
-        Contact Details
-      </h2>
+                        <div className="space-y-1 text-sm sm:text-base">
+                          <p><strong>Name:</strong> {selectedContact.name}</p>
+                          <p><strong>Email:</strong> {selectedContact.email}</p>
+                          <p><strong>Mobile:</strong> {selectedContact.mobile}</p>
+                          <p>
+                            <strong>Response Status:</strong>{" "}
+                            <span className={selectedContact.respond ? "text-green-600" : "text-red-600"}>
+                              {selectedContact.respond ? "Responded" : "Pending"}
+                            </span>
+                          </p>
+                        </div>
 
-      <div className="space-y-1 text-sm sm:text-base">
-        <p><strong>Name:</strong> {selectedContact.name}</p>
-        <p><strong>Email:</strong> {selectedContact.email}</p>
-        <p><strong>Mobile:</strong> {selectedContact.mobile}</p>
-        <p>
-          <strong>Response Status:</strong>{" "}
-          <span className={selectedContact.respond ? "text-green-600" : "text-red-600"}>
-            {selectedContact.respond ? "Responded" : "Pending"}
-          </span>
-        </p>
-      </div>
+                        <div className="p-3 bg-gray-100 rounded-lg text-sm sm:text-base">
+                          <strong>Message:</strong> <br />
+                          {selectedContact.message}
+                        </div>
 
-      <div className="p-3 bg-gray-100 rounded-lg text-sm sm:text-base">
-        <strong>Message:</strong> <br />
-        {selectedContact.message}
-      </div>
+                        <div className="flex flex-wrap gap-3 mt-4">
+                          <a
+                            href={`tel:${selectedContact.mobile}`}
+                            onClick={() => handleChange(selectedContact._id)}
+                            className="flex-1 min-w-[120px] bg-green-600 text-white px-4 py-2 text-center rounded-lg hover:bg-green-700 transition"
+                          >
+                            Call
+                          </a>
+                          <a
+                            href={`mailto:${selectedContact.email}?subject=Nandhavanam Response&body=Hi ${selectedContact.name},%0D%0A%0D%0AThank you for reaching out. We will respond shortly.%0D%0A%0D%0ARegards,%0DNandhavanam Team`}
+                            onClick={() => handleChange(selectedContact._id)}
+                            className="flex-1 min-w-[120px] bg-blue-600 text-white px-4 py-2 text-center rounded-lg hover:bg-blue-700 transition"
+                          >
+                            Email
+                          </a>
+                          <a
+                            href={`https://wa.me/${selectedContact.mobile}?text=${encodeURIComponent(
+                              `Hi ${selectedContact.name}, we received your message and will get back to you shortly.`
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => handleChange(selectedContact._id)}
+                            className="flex-1 min-w-[120px] bg-green-500 text-white px-4 py-2 text-center rounded-lg hover:bg-green-600 transition"
+                          >
+                            WhatsApp
+                          </a>
+                        </div>
 
-      {/* Buttons */}
-      <div className="flex flex-wrap gap-3 mt-4">
-
-        {/* Call */}
-        <a
-          href={`tel:${selectedContact.mobile}`}
-          onClick={() => handleChange(selectedContact._id)}
-          className="flex-1 min-w-[120px] bg-green-600 text-white px-4 py-2 text-center rounded-lg hover:bg-green-700 transition"
-        >
-          Call
-        </a>
-
-        {/* Email */}
-        <a
-          href={`mailto:${selectedContact.email}?subject=Nandhavanam Response&body=Hi ${selectedContact.name},%0D%0A%0D%0AThank you for reaching out. We will respond shortly.%0D%0A%0D%0ARegards,%0DNandhavanam Team`}
-          onClick={() => handleChange(selectedContact._id)}
-          className="flex-1 min-w-[120px] bg-blue-600 text-white px-4 py-2 text-center rounded-lg hover:bg-blue-700 transition"
-        >
-          Email
-        </a>
-
-        {/* WhatsApp */}
-        <a
-          href={`https://wa.me/${selectedContact.mobile}?text=${encodeURIComponent(
-            `Hi ${selectedContact.name}, we received your message and will get back to you shortly.`
-          )}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => handleChange(selectedContact._id)}
-          className="flex-1 min-w-[120px] bg-green-500 text-white px-4 py-2 text-center rounded-lg hover:bg-green-600 transition"
-        >
-          WhatsApp
-        </a>
-      </div>
-
-      <button
-        onClick={() => setOpenModal(false)}
-        className="w-full bg-gray-800 text-white px-4 py-2 rounded-lg mt-4 hover:bg-gray-900 transition"
-      >
-        Close
-      </button>
-
-    </div>
-  )}
-</AdminModal>
-
-                  </>
-                )}
-              </div>
+                        <button
+                          onClick={() => setOpenModal(false)}
+                          className="w-full bg-gray-800 text-white px-4 py-2 rounded-lg mt-4 hover:bg-gray-900 transition"
+                        >
+                          Close
+                        </button>
+                      </div>
+                    )}
+                  </AdminModal>
+                </>
+              )}
             </div>
           </div>
         </div>
