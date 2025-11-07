@@ -33,20 +33,20 @@ const gallerystorage = new CloudinaryStorage({
 const upload = multer({ storage, gallerystorage });
 
 const app = express();
-// app.use(cors());
-// const cors = require("cors");
+
 app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://nfakuwait.com",       // ✅ Add your real site
-      "https://www.nfakuwait.com",  // ✅ In case your domain redirects
-      "https://api.nfakuwait.com"  // ✅ If your frontend accesses a different subdomain
+      "https://nfakuwait.com",
+      "https://www.nfakuwait.com",
     ],
-    methods: "GET,POST,PUT,DELETE",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
+
 
 app.use(express.json());
 

@@ -23,7 +23,8 @@ export default function Login() {
     console.log(data);
     if (data) {
       alert("Login successful!");
-      localStorage.setItem("authToken", data);
+localStorage.setItem("authToken", data.user?._id);
+
       window.location.href = "/admin";
     } 
   } catch (error) {
