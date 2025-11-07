@@ -27,6 +27,7 @@ export default function Login() {
       window.location.href = "/admin";
     } 
   } catch (error) {
+    console.log(`${import.meta.env.VITE_API_URL}`);
     console.error("Login error:", error);
     alert("An error occurred during login. Please try again.");
   } finally {
