@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useEffect } from "react";
+import AdminModal from "./AdminModal.jsx";
 
 // A reusable component for displaying submission status messages
 const StatusMessage = ({ message, type }) => {
@@ -16,6 +17,24 @@ const StatusMessage = ({ message, type }) => {
 };
 
 export default function AdminDash() {
+  const handleChange = async (id, respond) => {
+    try {
+      const res = await fetch(`http://localhost:5000/contacts/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ respond: true }),
+      });
+
+      const updated = await res.json();
+      console.log(updated);
+      setContactdata((prev) =>
+        prev.map((c) => (c._id === id ? { ...c, respond: true } : c))
+      );
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   // State for the "Add Member" form
   const [memberData, setMemberData] = useState({
     name: "",
@@ -28,6 +47,8 @@ export default function AdminDash() {
   const [isSubmittingMember, setIsSubmittingMember] = useState(false);
   const [isGeneratingBio, setIsGeneratingBio] = useState(false);
   const [contactdata, setContactdata] = useState([]);
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedContact, setSelectedContact] = useState(null);
 
   // State for the "Add Event" form
   const [eventData, setEventData] = useState({
@@ -59,12 +80,12 @@ export default function AdminDash() {
     const fetchContactData = async () => {
       try {
         const res = await fetch(
-          "https://nandhavanam-backend.onrender.com/contacts",
-        
-
+          "http://localhost:5000/contacts"
+          // "https://nandhavanam-backend.onrender.com/contacts",
         );
         const data = await res.json();
         setContactdata(data);
+        console.log(data);
       } catch (err) {
         console.log(err);
       }
@@ -668,37 +689,149 @@ export default function AdminDash() {
                 View and respond to contact form submissions.
               </p>
               <div>
-                <table>
-                  <thead>
-                    <tr>
-                      <th className="border px-4 py-2">Name</th>
-                      <th className="border px-4 py-2">Email</th>
-                      <th className="border px-4 py-2">Mobile</th>
-                      <th className="border px-4 py-2">Message</th>
-                      <th className="border px-4 py-2">Responded</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {contactdata.map((contact, index) => (
-                      <tr key={index} className="">
-                        <td className="border px-4 py-2">{contact.name}</td>
-                        <td className="border px-4 py-2">{contact.email}</td>
-                        <td className="border px-4 py-2">{contact.mobile}</td>
-                        <td className="border px-4 py-2">{contact.message}</td>
-                        <td className="border px-4 py-2 text-center">
-                          <form>
-                            <input
-                              type="checkbox"
-                              checked={contact.respond}
-                              
-                            />
-                              
-                          </form>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                {contactdata.length === 0 ? (
+                  <p className="text-center text-gray-500">
+                    No contact requests available.
+                  </p>
+                ) : (
+                  <>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full border border-gray-300">
+                        <thead className="bg-gray-50">
+                          <tr className=" ">
+                            <th className="px-4 py-2 border-b border-gray-300 text-left text-sm font-medium text-gray-700">
+                              Name
+                            </th>
+                            <th className="px-4 py-2 border-b border-gray-300 text-left text-sm font-medium text-gray-700">
+                              Email
+                            </th>
+                            <th className="px-4 py-2 border-b border-gray-300 text-left text-sm font-medium text-gray-700">
+                              Message
+                            </th>
+                            <th className="px-4 py-2 border-b border-gray-300 text-left text-sm font-medium text-gray-700">
+                              Mobile Number
+                            </th>
+                            <th className="px-4 py-2 border-b border-gray-300 text-left text-sm font-medium text-gray-700">
+                              Respond  {contactdata.length > 0 && `(${contactdata.filter(c => !c.respond).length} pending)`}
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="cursor-pointer hover:bg-gray-50">
+                          {contactdata.map((contact) => (
+                            <tr
+                              key={contact.id}
+                              className="hover:bg-gray-100 "
+                              onClick={() => {
+                                setSelectedContact(contact);
+                                setOpenModal(true);
+                              }}
+                            >
+                              <td className="px-4 py-4 border-b  border-gray-300 text-sm text-gray-800">
+                                {contact.name}
+                              </td>
+                              <td className="px-4 py-2 border-b border-gray-300 text-sm text-gray-800">
+                                {contact.email}
+                              </td>
+                              <td className="px-4 py-2 border-b border-gray-300 text-sm text-gray-800">
+                                {" "}
+                                {contact.mobile}
+                              </td>
+                              <td className="px-4 py-2 border-b border-gray-300 text-sm text-gray-800">
+                                {contact.message}
+                              </td>
+                              <td>
+                                <button
+                                  className={`px-2 py-1 rounded-lg font-semibold  ${
+                                    contact.respond
+                                      ? "bg-green-300"
+                                      : "bg-red-500"
+                                  }`}
+                                >
+                                  {" "}
+                                  {contact.respond
+                                    ? "Response Sent"
+                                    : "⚠️  Response Needed"}{" "}
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                  <AdminModal isOpen={openModal} onClose={() => setOpenModal(false)}>
+  {selectedContact && (
+    <div className="space-y-4 text-gray-800">
+
+      <h2 className="text-2xl font-bold text-cyan-900 border-b pb-2">
+        Contact Details
+      </h2>
+
+      <div className="space-y-1 text-sm sm:text-base">
+        <p><strong>Name:</strong> {selectedContact.name}</p>
+        <p><strong>Email:</strong> {selectedContact.email}</p>
+        <p><strong>Mobile:</strong> {selectedContact.mobile}</p>
+        <p>
+          <strong>Response Status:</strong>{" "}
+          <span className={selectedContact.respond ? "text-green-600" : "text-red-600"}>
+            {selectedContact.respond ? "Responded" : "Pending"}
+          </span>
+        </p>
+      </div>
+
+      <div className="p-3 bg-gray-100 rounded-lg text-sm sm:text-base">
+        <strong>Message:</strong> <br />
+        {selectedContact.message}
+      </div>
+
+      {/* Buttons */}
+      <div className="flex flex-wrap gap-3 mt-4">
+
+        {/* Call */}
+        <a
+          href={`tel:${selectedContact.mobile}`}
+          onClick={() => handleChange(selectedContact._id)}
+          className="flex-1 min-w-[120px] bg-green-600 text-white px-4 py-2 text-center rounded-lg hover:bg-green-700 transition"
+        >
+          Call
+        </a>
+
+        {/* Email */}
+        <a
+          href={`mailto:${selectedContact.email}?subject=Nandhavanam Response&body=Hi ${selectedContact.name},%0D%0A%0D%0AThank you for reaching out. We will respond shortly.%0D%0A%0D%0ARegards,%0DNandhavanam Team`}
+          onClick={() => handleChange(selectedContact._id)}
+          className="flex-1 min-w-[120px] bg-blue-600 text-white px-4 py-2 text-center rounded-lg hover:bg-blue-700 transition"
+        >
+          Email
+        </a>
+
+        {/* WhatsApp */}
+        <a
+          href={`https://wa.me/${selectedContact.mobile}?text=${encodeURIComponent(
+            `Hi ${selectedContact.name}, we received your message and will get back to you shortly.`
+          )}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => handleChange(selectedContact._id)}
+          className="flex-1 min-w-[120px] bg-green-500 text-white px-4 py-2 text-center rounded-lg hover:bg-green-600 transition"
+        >
+          WhatsApp
+        </a>
+      </div>
+
+      <button
+        onClick={() => setOpenModal(false)}
+        className="w-full bg-gray-800 text-white px-4 py-2 rounded-lg mt-4 hover:bg-gray-900 transition"
+      >
+        Close
+      </button>
+
+    </div>
+  )}
+</AdminModal>
+
+                  </>
+                )}
               </div>
             </div>
           </div>

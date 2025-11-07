@@ -142,7 +142,7 @@ app.get("/notifications", async (req, res) => {
   try {
     const data = await Event.find({ home: true });
     res.json(data);
-    // console.log("///////////////////////////")
+    console.log("///////////////////////////");
     console.log(res);
   } catch (err) {
     console.log(err);
@@ -194,36 +194,45 @@ app.get("/members", async (req, res) => {
 });
 
 // mailer for contact form
+
 const contactSchema = new mongoose.Schema({
   name: String,
+
   email: String,
-  mobile: String,
   message: String,
   respond: { type: Boolean, default: false },
 });
+const Contact = mongoose.model("Contact", contactSchema);
 
-app.post("/send", async (req, res) => {
-  const { name, email, mobile, message } = req.body;
+app.post("/contacts", async (req, res) => {
+  const { name, email, message } = req.body;
   const respond = false;
+  console.log(name);
   try {
-    const newContact = new mongoose.model("Contact", contactSchema)({
+    const newContact = new Contact({
       name,
       email,
-      mobile,
       message,
       respond,
-      
     });
     await newContact.save();
     res.status(201).json(newContact);
-    res.send("Message received");
+    console.log(res.data);
   } catch (err) {
     console.log(err);
-    res.status(500).send("Server Error");
   }
-  
-  // add nodemailer logic here
- 
+});
+
+// geting gallery data
+
+app.get("/contacts", async (req, res) => {
+  try {
+    const data = await Contact.find();
+    res.json(data);
+    console.log(data);
+  } catch (error) {
+    console.log(err);
+  }
 });
 
 // google gemini ai
@@ -256,38 +265,21 @@ app.post("/generate", async (req, res) => {
   }
 });
 
+// contact respond update
+app.put("/contacts/:id" ,async(req,res)=>{
+  const {id}=req.params;
+  
+  try{
+    const update = await Contact.findByIdAndUpdate(id,{respond:req.body.respond},{new:true});
+    res.status(200).json(update);
 
-// contact form data fetch for admin dashboard
-
-app.get("/contacts",async(req,res)=>{
-   try {
-    const data = await Contacts.find();
-    res.json(data);
-    console.log(data);
-  } catch (error) {
-    console.log(error);
+  }catch(err){
+    console.log(err);
   }
+
+
+
 })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
