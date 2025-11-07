@@ -87,7 +87,7 @@ app.post("/users", async (req, res) => {
 app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-
+    console.log(email, password);
     if (!email || !password) {
       return res.status(400).json({ message: "Email and password required" });
     }
@@ -97,9 +97,10 @@ app.post("/login", async (req, res) => {
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
-
+    console.log("User logged in:", user);
     return res.status(200).json({ message: "Success", user });
   } catch (err) {
+    console.log(err);
     console.error("Login error:", err);
     return res.status(500).json({ message: "Internal server error" });
   }
@@ -231,7 +232,7 @@ app.post("/contacts", async (req, res) => {
 
 // geting gallery data
 
-app.get("/contacts", async (req, res) => {
+app.get("/viewcontacts", async (req, res) => {
   try {
     const data = await Contact.find();
     res.json(data);

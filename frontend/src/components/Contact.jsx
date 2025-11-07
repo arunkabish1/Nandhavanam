@@ -41,7 +41,7 @@ export default function Contact() {
     };
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/contacts`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/viewcontacts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
