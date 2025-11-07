@@ -21,6 +21,7 @@ export default function Homepage() {
     const timer = setTimeout(() => {
       fetch(`${import.meta.env.VITE_API_URL}/notifications`)
         .then((res) => {
+          console.log(res)
           if (!res.ok) throw new Error("Failed to fetch notifications");
           return res.json();
         })
@@ -43,9 +44,11 @@ export default function Homepage() {
           setNotification(data);
         })
         .catch((err) => {
+          
           console.error("Error fetching notifications:", err);
           setError("Unable to load events at the moment.");
         })
+        
         .finally(() => setLoading(false));
     }, 1000);
 
@@ -57,7 +60,6 @@ export default function Homepage() {
     if (eventsSection) eventsSection.scrollIntoView({ behavior: "smooth" });
   };
 
-  // 🌀 Custom Loader Component
   if (loading) {
     return (
       <motion.div
@@ -98,7 +100,7 @@ export default function Homepage() {
             muted
             playsInline
             preload="metadata"
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover scale-125"
           >
             <source src={bg} type="video/mp4" />
           </video>

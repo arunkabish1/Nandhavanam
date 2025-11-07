@@ -75,11 +75,12 @@ export default function AdminDash() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ respond: true }),
       });
+      
       const updated = await res.json();
       setContactdata((prev) =>
         prev.map((c) => (c._id === id ? { ...c, respond: true } : c))
       );
-      console.log("Updated contact:", updated);
+      // console.log("Updated contact:", updated);
     } catch (err) {
       console.error(err);
     }
@@ -89,7 +90,10 @@ export default function AdminDash() {
   useEffect(() => {
     const fetchContactData = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/contacts`);
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/contactsview`);
+        console.log("Response status:", res);
+        console.log(`${import.meta.env.VITE_API_URL}/contactsview`);
+
         const data = await res.json();
         setContactdata(data || []);
       } catch (err) {
@@ -124,7 +128,7 @@ export default function AdminDash() {
     }
     setIsGeneratingPost(true);
     setEventStatus({ message: "Generating your event post with AI...", type: "info" });
-    const prompt = `Write a professional and engaging event announcement post for an event called "${eventData.event}". The tone should be exciting and welcoming. Include placeholders like [Date], [Time], [Location]. Keep it concise and informative. Only 1 response.`;
+    const prompt = `Write a professional and engaging event announcement post for an event called "${eventData.event}". The tone should be exciting and welcoming. Include placeholders with given [Date], [Time], [Location]. Keep it concise and informative. Only 1 response.`;
     try {
       const generatedPost = await callAI(prompt);
       setEventData((prev) => ({ ...prev, post: generatedPost }));

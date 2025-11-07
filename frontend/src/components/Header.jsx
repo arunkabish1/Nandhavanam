@@ -20,7 +20,7 @@ export default function Header() {
       <header className="fixed top-0 left-0 w-full bg-white/70 backdrop-blur-lg shadow-md z-50 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-5 py-3 flex items-center justify-between">
           {/* 🔰 Logo Section */}
-          <div className="flex items-center gap-3 cursor-pointer select-none">
+          <a href="/" className="flex items-center gap-3 cursor-pointer select-none">
             <img
               src={logo}
               alt="Nandhavanam Logo"
@@ -29,7 +29,7 @@ export default function Header() {
             <h1 className="text-2xl font-extrabold text-gray-800 tracking-tight font-[Poppins]">
               நந்தவனம்
             </h1>
-          </div>
+          </a>
 
           {/* 🧭 Desktop Navigation (only visible ≥1024px) */}
           <nav className="hidden lg:flex flex-1 justify-center">

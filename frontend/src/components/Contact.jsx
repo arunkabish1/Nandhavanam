@@ -41,13 +41,13 @@ export default function Contact() {
     };
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/viewcontacts`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/contacts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
         signal: controller.signal,
       });
-
+      console.log(res)
       clearTimeout(timeout);
       setLoading(false);
 

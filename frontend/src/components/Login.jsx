@@ -11,24 +11,27 @@ export default function Login() {
 
   try{
     setLoading(true);
-    const response = await fetch("https://api.nfakuwait.com/login", {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ email, password }),
     }); 
-
+    console.log("Login response status:", response);
     const data = await response.json();
     console.log(data);
-    if (data) {
+    if (response.status === 401) {
+      alert("Invalid email or password. Please try again.");
+    } else if (response.ok) {
       alert("Login successful!");
+    
 localStorage.setItem("authToken", data.user?._id);
 
       window.location.href = "/admin";
     } 
   } catch (error) {
-    console.log(`${import.meta.env.VITE_API_URL}`);
+    
     console.error("Login error:", error);
     alert("An error occurred during login. Please try again.");
   } finally {
