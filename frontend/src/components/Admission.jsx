@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
+import { HoverImageLinks } from "./HoverImageLinks";
 
 export function Admission() {
   const [ready, setReady] = useState(false);
@@ -26,7 +27,6 @@ export function Admission() {
         exit={{ opacity: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
       >
-        {/* 🌸 Floating Background Blobs */}
         <motion.div
           className="absolute w-[26rem] h-[26rem] bg-blue-400/40 rounded-full blur-3xl top-10 left-10 z-0"
           animate={{ y: [0, 60, 0], x: [0, 30, 0] }}
@@ -58,7 +58,7 @@ export function Admission() {
             <p className="text-lg text-gray-700 font-medium">
               Building Knowledge through Culture & Language
             </p>
-
+           
             <div className="mt-6 text-gray-600 leading-relaxed">
               <p>Join our vibrant community of Tamil learners and families.</p>
               <p className="mt-1">
@@ -67,6 +67,9 @@ export function Admission() {
               </p>
             </div>
           </motion.div>
+         <div>
+        <img className="rounded-3xl items-center shadow-xl mx-auto p-4" src="https://res.cloudinary.com/delx0bz9t/image/upload/v1762617858/537726309_3968495800069589_5130353839376617639_n_nsqtaw.jpg" alt="" />
+            </div>
 
           {/* 🌼 Admission Info Card */}
           <motion.div
@@ -81,12 +84,16 @@ export function Admission() {
             </h2>
             <ul className="list-disc list-inside space-y-3 text-gray-700 leading-relaxed">
               <li>Admissions are open for the academic year 2024–2025.</li>
-              <li>We offer Tamil language and Silambam classes for all ages.</li>
+              <li>
+                We offer Tamil language and Silambam classes for all ages.
+              </li>
               <li>
                 Classes are conducted by experienced teachers focusing on
                 language, culture, and traditional martial art values.
               </li>
-              <li>Weekend classes available in multiple locations across Kuwait.</li>
+              <li>
+                Weekend classes available in multiple locations across Kuwait.
+              </li>
               <li>Financial aid and scholarships for eligible students.</li>
               <li>
                 For more details, contact us or fill the admission form below.
@@ -94,7 +101,6 @@ export function Admission() {
             </ul>
           </motion.div>
 
-          {/* 🌍 Tamil Class Locations */}
           <motion.div
             className="max-w-5xl mx-auto mt-16 bg-gradient-to-br from-blue-50 via-white to-indigo-50 border border-blue-100 rounded-2xl shadow-md p-8"
             initial={{ opacity: 0, y: 30 }}
@@ -128,6 +134,12 @@ export function Admission() {
                   <p className="text-sm text-gray-600 mt-1">
                     Weekend Batch (2 hrs)
                   </p>
+                  <a
+                    className="mt-3 inline-block bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg transition font-medium"
+                    href="/contact"
+                  >
+                    Know More
+                  </a>
                 </motion.div>
 
                 {/* Abu Halifa */}
@@ -140,12 +152,19 @@ export function Admission() {
                     alt="Abu Halifa Tamil Class"
                     className="w-full h-40 object-cover rounded-lg mb-4"
                   />
+
                   <h4 className="text-lg font-semibold text-gray-800">
                     Abu Halifa <span className="text-blue-700">- அபுகலிபா</span>
                   </h4>
                   <p className="text-sm text-gray-600 mt-1">
                     Weekend Batch (2 hrs)
                   </p>
+                  <a
+                    className="mt-3 inline-block bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg transition font-medium"
+                    href="/contact"
+                  >
+                    Know More
+                  </a>
                 </motion.div>
               </div>
             </div>
@@ -157,6 +176,7 @@ export function Admission() {
               </h3>
               <div className="grid sm:grid-cols-2 gap-6 max-w-3xl mx-auto text-center">
                 {/* Salmiya */}
+
                 <motion.div
                   whileHover={{ scale: 1.05 }}
                   className="p-6 bg-white/80 border border-blue-100 rounded-xl shadow-md"
@@ -172,6 +192,12 @@ export function Admission() {
                   <p className="text-sm text-gray-600 mt-1">
                     2-hour class sessions
                   </p>
+                  <a
+                    className="mt-3 inline-block bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg transition font-medium"
+                    href="/contact"
+                  >
+                    Know More
+                  </a>
                 </motion.div>
 
                 {/* Abbasiya */}
@@ -190,6 +216,12 @@ export function Admission() {
                   <p className="text-sm text-gray-600 mt-1">
                     2-hour class sessions
                   </p>
+                  <a
+                    className="mt-3 inline-block bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg transition font-medium"
+                    href="/contact"
+                  >
+                    Know More
+                  </a>
                 </motion.div>
               </div>
             </div>
@@ -228,6 +260,12 @@ export function Admission() {
                   <p className="text-sm text-gray-600 mt-1">
                     Traditional Tamil martial art classes (2 hrs)
                   </p>
+                  <a
+                    className="mt-3 inline-block bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg transition font-medium"
+                    href="/contact"
+                  >
+                    Know More
+                  </a>
                 </motion.div>
               ))}
             </div>
@@ -259,6 +297,8 @@ export function Admission() {
           </motion.div>
         </div>
       </motion.div>
+      <HoverImageLinks/>
     </AnimatePresence>
+    
   );
 }

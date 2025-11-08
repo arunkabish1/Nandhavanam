@@ -251,6 +251,7 @@ export default function Contact() {
           </form>
 
           {isOpen && <Modal />}
+          
         </div>
       </div>
     </div>

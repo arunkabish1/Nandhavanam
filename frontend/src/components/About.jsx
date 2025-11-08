@@ -1,20 +1,19 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { HoverImageLinks } from "./HoverImageLinks";
 
 export default function About() {
   return (
-    <div className="relative pt-20 min-h-screen bg-gradient-to-b from-indigo-50 via-white to-blue-50 text-gray-800 px-6 py-16 overflow-hidden">
+    <><div className="relative pt-20 min-h-screen bg-gradient-to-b from-indigo-50 via-white to-blue-50 text-gray-800 px-6 py-16 overflow-hidden">
       {/* 🌸 Background Blobs */}
       <motion.div
         className="absolute w-96 h-96 bg-blue-300/30 rounded-full blur-3xl top-10 left-10"
         animate={{ y: [0, 60, 0], x: [0, 40, 0] }}
-        transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
-      />
+        transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }} />
       <motion.div
         className="absolute w-[28rem] h-[28rem] bg-yellow-300/30 rounded-full blur-3xl top-1/3 right-10"
         animate={{ y: [0, -60, 0], x: [0, -40, 0] }}
-        transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-      />
+        transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }} />
 
       {/* 💫 Introduction */}
       <motion.section
@@ -30,8 +29,7 @@ export default function About() {
         <img
           src="https://scontent.fmaa2-2.fna.fbcdn.net/v/t1.6435-9/55649770_2211823662403487_6317640375494246400_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=cc71e4&_nc_ohc=RpFFcrz_08wQ7kNvwEON8Lu&_nc_oc=Admm_2TcLo6b5TzkxS8bWCsq5aIdMA-vQxFbyJ5DYgFqH-zAepasSkuMs1GQ1X_WsR21MetiBFiHs-IoMqE5Ws7U&_nc_zt=23&_nc_ht=scontent.fmaa2-2.fna&_nc_gid=u71NLNeC1miFIxfz1yrVtg&oh=00_AfjWhc8a8XXanOZts8eSK4p7M1SSWk20EQ2Li8M3xLqxbg&oe=693161FE"
           alt="Nandhavanam Group"
-          className="rounded-2xl shadow-lg mx-auto mb-10 w-full max-w-3xl"
-        />
+          className="rounded-2xl shadow-lg mx-auto mb-10 w-full max-w-3xl" />
 
         <p className="text-lg leading-relaxed mb-4 text-gray-700">
           The <strong>Kuwait Nandhavanam Tamil Family Association</strong> is a
@@ -72,8 +70,7 @@ export default function About() {
             <img
               src="https://scontent.fmaa2-3.fna.fbcdn.net/v/t39.30808-6/547151790_3984595761792926_4438388912605419073_n.jpg?_nc_cat=103&ccb=1-7&_nc_sid=127cfc&_nc_ohc=GrgHLe9ePr0Q7kNvwHvZuKj&_nc_oc=AdmHHJTsernPc2w1s0OifHCI9NpOu0zCEWLoyIGfNNjyy24nUNH8rPEESleOkwUVpGz1ZEH5gLI1Ri_aaQ3C_8NK&_nc_zt=23&_nc_ht=scontent.fmaa2-3.fna&_nc_gid=DAugEKKFdmdOxu1Rx16tCA&oh=00_AfgalIAU_vH6N3qWcRirG--IP3IdEF31Ui_e9Nw_4seztw&oe=690FBF8E"
               alt="Tamil Classes"
-              className="rounded-2xl w-full h-48 object-cover mb-4"
-            />
+              className="rounded-2xl w-full h-48 object-cover mb-4" />
             <h3 className="text-xl font-semibold text-yellow-700 mb-3">
               1. Promotion of the Tamil Language
             </h3>
@@ -93,8 +90,7 @@ export default function About() {
             <img
               src="https://scontent.fmaa2-1.fna.fbcdn.net/v/t39.30808-6/485801507_3817758038476700_7643677831592977098_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=127cfc&_nc_ohc=bxzbr_SZr-cQ7kNvwHNqIFt&_nc_oc=AdnXkn_9qDSLqNKEkm0cSXOwhbkzgrWE5eXzI5FlYI371dSKy_hVFkuAPjpZhpK1U130ZJe3BWgACF4ZnGMIlPtA&_nc_zt=23&_nc_ht=scontent.fmaa2-1.fna&_nc_gid=i02Y8CiT2-39SxcCHOySRg&oh=00_AfhKRVjrTWY-pWIBCBqYsFFbPOASljKupvTGM8Lz2265TA&oe=691000EC"
               alt="Social Welfare"
-              className="rounded-2xl w-full h-48 object-cover mb-4"
-            />
+              className="rounded-2xl w-full h-48 object-cover mb-4" />
             <h3 className="text-xl font-semibold text-green-700 mb-3">
               2. Social Initiatives
             </h3>
@@ -110,8 +106,7 @@ export default function About() {
             <img
               src="https://scontent.fmaa2-1.fna.fbcdn.net/v/t39.30808-6/502681634_3890807697838400_1828521536295120010_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=127cfc&_nc_ohc=KDSKbHG01loQ7kNvwGISN_T&_nc_oc=Adli0C0gdfeeE-IJI32oS_K8zsdpu7DNYB8Tpr8xu7VnFn-DSrJsVZmzi23CtDHosD7Xc8EZqAGTyFIk8J9_it7v&_nc_zt=23&_nc_ht=scontent.fmaa2-1.fna&_nc_gid=KZCmPKhxxcCfrTIrLaQDgA&oh=00_Afgc0mLR6T-lTbxUseUT7IZRfU1Y4Ric4Nubr34JJaktwA&oe=690FCF9D"
               alt="Cultural Programs"
-              className="rounded-2xl w-full h-48 object-cover mb-4"
-            />
+              className="rounded-2xl w-full h-48 object-cover mb-4" />
             <h3 className="text-xl font-semibold text-purple-700 mb-3">
               3. Cultural Events
             </h3>
@@ -144,6 +139,7 @@ export default function About() {
           Explore Admissions
         </a>
       </motion.section>
-    </div>
+
+    </div><HoverImageLinks /></>
   );
 }

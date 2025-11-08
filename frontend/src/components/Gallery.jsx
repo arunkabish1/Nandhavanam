@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import BackgroundBlobs from "./BackgroundBlobs";
+import { HoverImageLinks } from "./HoverImageLinks";
 
 export default function Gallery() {
   const [members, setMembers] = useState([]);
@@ -19,7 +20,7 @@ export default function Gallery() {
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-b from-white via-blue-50/60 to-white pt-24 px-6 overflow-hidden">
+    <><div className="relative min-h-screen bg-gradient-to-b from-white via-blue-50/60 to-white pt-24 px-6 overflow-hidden">
       <BackgroundBlobs />
 
       {/* Title */}
@@ -69,8 +70,7 @@ export default function Gallery() {
                 <motion.img
                   src={item.image || "https://via.placeholder.com/300x200?text=Member"}
                   alt={item.mname || "Unnamed Member"}
-                  className="object-contain w-[90%] h-[90%] transition-transform duration-700 group-hover:scale-105 rounded-lg"
-                />
+                  className="object-contain w-[90%] h-[90%] transition-transform duration-700 group-hover:scale-105 rounded-lg" />
                 <div className="absolute inset-0 bg-gradient-to-t from-blue-900/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition duration-500"></div>
               </div>
 
@@ -90,6 +90,6 @@ export default function Gallery() {
           ))}
         </motion.div>
       )}
-    </div>
+    </div><HoverImageLinks /></>
   );
 }

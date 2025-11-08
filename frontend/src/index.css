@@ -12,6 +12,15 @@
      font-family: hind;
     src:url(../fonts/HindMadurai-Bold.ttf)
 } */
+@keyframes scroll-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Pause animation on hover */
+.carousel:hover .scroll-content {
+  animation-play-state: paused;
+}
 
 @font-face{
      font-family: hind;
