@@ -56,14 +56,15 @@ export default function Homepage() {
 
   if (loading) {
     return (
-      <motion.div className="fixed inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-white to-blue-100 z-50">
+      <motion.div className="fixed inset-0  flex flex-col items-center justify-center bg-gradient-to-b from-white to-blue-100 z-50">
         <motion.img
           src={logo}
           alt="Loading..."
           className="h-28 w-28 rounded-full"
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+          animate={{ rotate: 0 }}
+          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
         />
+        <h1 className="text-4xl sm:text-6xl font-extrabold text-zinc-600">NFA Kuwait</h1>
       </motion.div>
     );
   }
@@ -252,7 +253,7 @@ export default function Homepage() {
           )}
         </section>
 
-        
+       
 {/* our sponsers */}
           <HoverImageLinks/>
 

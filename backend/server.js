@@ -178,7 +178,7 @@ app.post("/events", uploadEvent.single("image"), async (req, res) => {
         port: 465,
         secure: true,
         auth: {
-          user: process.env.SMTP_PASS,
+          user: process.env.SMTP_USER,
           pass: process.env.SMTP_PASS,
         },
       });
@@ -332,7 +332,7 @@ app.post("/contacts", async (req, res) => {
       port: 465,
       secure: true,
       auth: {
-        user: process.env.SMTP_PASS,
+        user: process.env.SMTP_USER,
           pass: process.env.SMTP_PASS,
       },
     });
@@ -413,7 +413,6 @@ app.post("/contacts", async (req, res) => {
   }
 });
 
-// NEW: standardized GET /contacts (frontend uses this)
 app.get("/contactsview", async (req, res) => {
   try {
     const data = await Contact.find();
@@ -424,7 +423,6 @@ app.get("/contactsview", async (req, res) => {
   }
 });
 
-// keep old route if you still want it
 app.get("/viewcontacts", async (req, res) => {
   try {
     const data = await Contact.find();
@@ -450,28 +448,30 @@ app.put("/contacts/:id", async (req, res) => {
   }
 });
 
-// AI generation via Google Generative AI SDK (server-side only)
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const apiKey = process.env.GEMINI_API_KEY; 
+const genAI = new GoogleGenerativeAI(apiKey);
 
+const model = genAI.getGenerativeModel({
+  model: "gemini-2.5-flash-preview-09-2025",
+});
 app.post("/generate", async (req, res) => {
   try {
     const { prompt } = req.body;
     if (!prompt) {
       return res.status(400).json({ error: "Prompt is required" });
     }
-    const response = await genAI.generateText({
-      model: "gemini-1.5-pro",
-      prompt: { text: prompt },
-    });
-    const aiText = response.candidates?.[0]?.output || "";
-    res.status(200).json({ text: aiText });
+
+    const result = await model.generateContent(prompt);
+    const aiText = result.response.text();
+
+    return res.status(200).json({ text: aiText });
+
   } catch (err) {
     console.error("AI generation error:", err);
-    res.status(500).json({ error: "Error generating AI text" });
+    return res.status(500).json({ error: "Error generating AI text" });
   }
 });
 
-// admin page email reply function
 app.post("/sent-reply", async (req, res) => {
   try {
     const { toEmail, message, date } = req.body;
@@ -488,11 +488,13 @@ app.post("/sent-reply", async (req, res) => {
       port: 465,
       secure: true,
       auth: {
-        user: process.env.SMTP_PASS,
+        user: process.env.SMTP_USER,
           pass: process.env.SMTP_PASS,
+          
       },
+      
     });
-
+    console.log(process.env.SMTP_PASS)
     const adminMailOptions = {
       from: '"NFA Team" <nfa-team@nfakuwait.com>',
       to: toEmail,

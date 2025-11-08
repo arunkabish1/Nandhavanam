@@ -115,7 +115,10 @@ export default function AdminDash() {
     setIsGeneratingPost(true);
     try {
       const text = await callAI(
-        `Write a professional announcement post for "${eventData.event}". Include placeholders [Date], [Time], [Location].`
+        `Write a professional announcement post for the event: "${eventData.event}" held by NFA Kuwait. The announcement should sound formal and engaging.
+Include placeholders for the date, time, and location in the format: [Date], [Time], [Location].
+Do not use bold, italics, emojis, or decorative characters.
+Provide the result as clean plain text only. in tamil`
       );
       setEventData((p) => ({ ...p, post: text }));
       setEventStatus({ message: "Post Generated!", type: "success" });
@@ -131,7 +134,10 @@ export default function AdminDash() {
     setIsGeneratingBio(true);
     try {
       const text = await callAI(
-        `Write a short friendly bio for ${memberData.name}, who is a ${memberData.position}.`
+        `Write a short, friendly bio for ${memberData.name}, who is a ${memberData.position}.
+Keep the tone warm, approachable, and positive.
+Do not use emojis or overly formal language.
+Output plain text only.`
       );
       setMemberData((p) => ({ ...p, description: text }));
       setMemberStatus({
