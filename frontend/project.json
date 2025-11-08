@@ -1,9 +1,0 @@
-{
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "framework": "vite",
-  "staticAssets": {
-    "base": "/",
-    "include": ["robots.txt", "sitemap.xml"]
-  }
-}
