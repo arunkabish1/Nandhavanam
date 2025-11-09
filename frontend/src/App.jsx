@@ -11,6 +11,7 @@ import Header from "./components/Header.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import InstallPrompt from "./components/InstallPrompt.jsx";
 import TranslateFloatingButton from "./components/TranslateFloatingButton.jsx";
+import Teacher from "./components/Teacher.jsx";
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
           <Route path="/admission" element={<Admission />}></Route>
           <Route path="/gallery" element={<Gallery />}></Route>
           <Route path="/contact" element={<Contact />}></Route>
+          <Route path="/teacher" element={<Teacher />}></Route>
         </Routes>
       </Router>
       <InstallPrompt/>

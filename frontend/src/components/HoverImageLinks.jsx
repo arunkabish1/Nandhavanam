@@ -20,6 +20,12 @@ export const HoverImageLinks = () => {
           href="/gallery"
         />
         <Link
+          heading="Teachers"
+          subheading="We Teach with great people"
+          imgSrc="https://scontent.fmaa2-1.fna.fbcdn.net/v/t39.30808-6/502681634_3890807697838400_1828521536295120010_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=127cfc&_nc_ohc=KDSKbHG01loQ7kNvwGISN_T&_nc_oc=Adli0C0gdfeeE-IJI32oS_K8zsdpu7DNYB8Tpr8xu7VnFn-DSrJsVZmzi23CtDHosD7Xc8EZqAGTyFIk8J9_it7v&_nc_zt=23&_nc_ht=scontent.fmaa2-1.fna&_nc_gid=KZCmPKhxxcCfrTIrLaQDgA&oh=00_Afgc0mLR6T-lTbxUseUT7IZRfU1Y4Ric4Nubr34JJaktwA&oe=690FCF9D"
+          href="/teacher"
+        />
+        <Link
           heading="Admissions"
           subheading="Our work speaks for itself"
           imgSrc="https://scontent.fmaa2-2.fna.fbcdn.net/v/t39.30808-6/545766409_3984595488459620_2458843004921002685_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=127cfc&_nc_ohc=bF_R9chY97wQ7kNvwHTXlIA&_nc_oc=AdlfIlNZMaT27TTOWx08raV5hiB7wjDvYMH3rSV3OfHgOBrr87XuK1drAFh4GpAzGLZjS-R5s-kXN27K0OZkMafO&_nc_zt=23&_nc_ht=scontent.fmaa2-2.fna&_nc_gid=aesMmSM3SnRZhYnkD7IGCw&oh=00_AfjZFWTbVjgCJS7kdT1C1lJMdtFOf3gkXIcNWZBID3uH2Q&oe=690FAC08"

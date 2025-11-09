@@ -2,6 +2,11 @@ import React, { useEffect, useState } from "react";
 import AdminModal from "./AdminModal.jsx";
 
 const StatusMessage = ({ message, type }) => {
+
+  
+
+
+
   if (!message) return null;
   const types = {
     success: "bg-green-100 text-green-700 border-green-300",
@@ -18,7 +23,31 @@ const StatusMessage = ({ message, type }) => {
 };
 
 export default function AdminDash() {
+
+
+  const handleDelete = async (_id) => {
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL}/teacher/${_id}`, { method: "DELETE" });
+      setTeachersData((prev) => prev.filter((teacher) => teacher._id !== _id));
+    } catch (err) {
+      console.log(err);
+    }
+  };
   const [activeTab, setActiveTab] = useState("users");
+
+  
+   const [teachersForm, setTeachersForm] = useState({
+    name: "",
+    position: "",
+    email: "",
+    description: "",
+  });
+
+  const [teachersData, setTeachersData] = useState([]);
+  const [teacherImage, setTeacherImage] = useState(null);
+  const [teacherStatus, setTeacherStatus] = useState({ message: "", type: "" });
+  const [isSubmittingTeacher, setIsSubmittingTeacher] = useState(false);
+  const [isGeneratingTeacherBio, setIsGeneratingTeacherBio] = useState(false);
 
   const [memberData, setMemberData] = useState({
     name: "",
@@ -26,12 +55,14 @@ export default function AdminDash() {
     email: "",
     description: "",
   });
+  
   const [memberImage, setMemberImage] = useState(null);
   const [memberStatus, setMemberStatus] = useState({ message: "", type: "" });
   const [isSubmittingMember, setIsSubmittingMember] = useState(false);
   const [isGeneratingBio, setIsGeneratingBio] = useState(false);
 
   const [contactdata, setContactdata] = useState([]);
+  const [teacherdata,setTeacherdata] = useState([])
   const [openModal, setOpenModal] = useState(false);
   const [selectedContact, setSelectedContact] = useState(null);
   const [replyMessage, setReplyMessage] = useState("");
@@ -90,6 +121,15 @@ export default function AdminDash() {
     } catch {}
   };
 
+useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/teacher`);
+        const data = await res.json();
+        setTeachersData(data || []);
+      } catch {}
+    })();
+  }, []);
   useEffect(() => {
     (async () => {
       try {
@@ -179,6 +219,64 @@ Output plain text only.`
       setIsSubmittingMember(false);
     }
   };
+// teacher
+
+ const handleGenerateTeacherBio = async () => {
+    if (!teachersForm.name || !teachersForm.position) return;
+    setIsGeneratingTeacherBio(true);
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: `Write a short, friendly bio for ${teachersForm.name}, who is a ${teachersForm.position}. No emojis.`,
+        }),
+      });
+      const json = await res.json();
+      setTeachersForm((p) => ({ ...p, description: json.text }));
+      setTeacherStatus({ message: "Bio Generated Successfully!", type: "success" });
+    } catch {
+      setTeacherStatus({ message: "Failed to generate bio.", type: "error" });
+    } finally {
+      setIsGeneratingTeacherBio(false);
+    }
+  };
+
+  const addTeacher = async (e) => {
+    e.preventDefault();
+    setIsSubmittingTeacher(true);
+    setTeacherStatus({ message: "", type: "" });
+
+    const fd = new FormData();
+    fd.append("mname", teachersForm.name);
+    fd.append("position", teachersForm.position);
+    fd.append("description", teachersForm.description);
+    fd.append("email", teachersForm.email);
+    if (teacherImage) fd.append("image", teacherImage);
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/teacher`, {
+        method: "POST",
+        body: fd,
+      });
+      const newTeacher = await res.json();
+      setTeachersData((prev) => [...prev, newTeacher]);
+
+      setTeacherStatus({ message: "Teacher Added!", type: "success" });
+      setTeachersForm({ name: "", position: "", email: "", description: "" });
+      setTeacherImage(null);
+      e.target.reset();
+    } catch {
+      setTeacherStatus({ message: "Failed to add Teacher.", type: "error" });
+    } finally {
+      setIsSubmittingTeacher(false);
+    }
+  };
+
+
+
+
+
 
   const addEvent = async (e) => {
     e.preventDefault();
@@ -278,7 +376,7 @@ Output plain text only.`
 
         {/* TABS */}
         <div className="flex gap-3 flex-wrap justify-center mb-8">
-          {["users", "events", "members", "contacts"].map((tab) => (
+          {["users", "events", "members", "contacts","teachers"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -292,6 +390,8 @@ Output plain text only.`
               {tab === "events" && "Events"}
               {tab === "members" && "Gallery Members"}
               {tab === "contacts" && "Contacts"}
+              {tab === "teachers" && "Teachers"}
+              
             </button>
           ))}
         </div>
@@ -550,6 +650,11 @@ Output plain text only.`
               </div>
             )}
 
+
+
+
+
+
             <AdminModal isOpen={openModal} onClose={() => setOpenModal(false)}>
               {selectedContact && (
                 <div className="space-y-4">
@@ -597,6 +702,65 @@ Output plain text only.`
             </AdminModal>
           </div>
         )}
+
+  {/* Teachers */}
+        {activeTab === "teachers" && (
+          <>
+            <div className="bg-white shadow-lg rounded-lg p-6 max-w-3xl mx-auto">
+              <h2 className="text-lg font-semibold mb-4">Add Teacher</h2>
+              <form onSubmit={addTeacher} className="space-y-4">
+                <input className={inputClass} name="name" value={teachersForm.name} placeholder="Name" onChange={handleInputChange(setTeachersForm)} required />
+                <input className={inputClass} name="email" value={teachersForm.email} placeholder="Email" onChange={handleInputChange(setTeachersForm)} required />
+                <input className={inputClass} name="position" value={teachersForm.position} placeholder="Position" onChange={handleInputChange(setTeachersForm)} required />
+
+                <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <label>Description</label>
+                    <button type="button" onClick={handleGenerateTeacherBio} className={buttonSecondary} disabled={isGeneratingTeacherBio}>
+                      {isGeneratingTeacherBio ? "..." : "✨ Generate Bio"}
+                    </button>
+                  </div>
+                  <textarea className={inputClass + " min-h-28"} name="description" value={teachersForm.description} onChange={handleInputChange(setTeachersForm)} required />
+                </div>
+
+                <input type="file" onChange={handleFileChange(setTeacherImage)} className="text-sm" />
+
+                <button className={buttonPrimary} disabled={isSubmittingTeacher}>
+                  {isSubmittingTeacher ? "Adding..." : "Add Teacher"}
+                </button>
+                <StatusMessage {...teacherStatus} />
+              </form>
+            </div>
+
+            <div className="overflow-x-auto mt-20">
+              <table className="w-full min-w-[500px] text-left border">
+                <thead className="bg-gray-50 text-sm">
+                  <tr>
+                    <th className="p-3 border-b">Name</th>
+                    <th className="p-3 border-b">Position</th>
+                    <th className="p-3 border-b">Email</th>
+                    <th className="p-3 border-b">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {teachersData.map((c) => (
+                    <tr key={c._id} className="border hover:bg-gray-50">
+                      <td className="p-3">{c.mname}</td>
+                      <td className="p-3">{c.position}</td>
+                      <td className="p-3">{c.email}</td>
+                      <td className="p-3">
+                        <button onClick={() => handleDelete(c._id)} className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600">
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+       
       </div>
     </div>
   );

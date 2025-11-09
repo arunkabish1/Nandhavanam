@@ -32,8 +32,17 @@ const galleryStorage = new CloudinaryStorage({
   },
 });
 
+const teacherStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "teacher",
+    allowed_formats: ["jpg", "png", "jpeg"],
+  },
+});
+
 const uploadEvent = multer({ storage: eventStorage });
 const uploadGallery = multer({ storage: galleryStorage });
+const uploadTeacher = multer({ storage: teacherStorage });
 
 // ---- App ----
 const app = express();
@@ -101,6 +110,16 @@ const ContactSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 const Contact = mongoose.model("Contact", ContactSchema);
+
+
+const TeacherSchema = new mongoose.Schema({
+  mname: String,
+  position: String,
+  email: String,
+  image: String,
+  description: String,
+});
+const Teacher = mongoose.model("Teacher", TeacherSchema);
 
 // ---- Routes ----
 
@@ -541,6 +560,57 @@ app.post("/sent-reply", async (req, res) => {
     res.status(500).json({ error: "Error sending reply email" });
   }
 });
+
+
+
+
+// teacher
+
+app.post("/teacher", uploadTeacher.single("image"), async (req, res) => {
+  try {
+    const { mname, email, description, position } = req.body;
+    const newTeacher = new Teacher({
+      mname,
+      email,
+      position,
+      description,
+      image: req.file?.path || "",
+    });
+    await newTeacher.save();
+    res.status(201).json(newTeacher);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error saving Teacher member" });
+  }
+});
+app.get("/teacher", async (req, res) => {
+  try {
+    const data = await Teacher.find();
+    res.json(data);
+    
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error fetching teachers" });
+  }
+});
+
+app.delete("/teacher/:_id", async (req, res) => {
+  const { _id } = req.params;
+  try {
+    const update = await Teacher.findByIdAndDelete(
+      _id
+      
+    );
+    res.status(200).json(update);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error updating contact" });
+  }
+});
+
+
+
+
 
 // ---- Start ----
 const PORT = process.env.PORT || 5000;

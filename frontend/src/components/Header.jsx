@@ -38,6 +38,7 @@ export default function Header() {
                 { name: "Home", path: "/" },
                 { name: "About", path: "/about" },
                 { name: "Members", path: "/gallery" },
+                { name: "Teachers", path: "/teacher" },
                 { name: "Admissions", path: "/admission" },
                 { name: "Contact", path: "/contact" },
               ].map((link) => (
@@ -94,6 +95,7 @@ export default function Header() {
                 { name: "Home", path: "/" },
                 { name: "About", path: "/about" },
                 { name: "Members", path: "/gallery" },
+                { name: "Teachers", path: "/teacher" },
                 { name: "Admissions", path: "/admission" },
                 { name: "Contact", path: "/contact" },
               ].map((link) => (
