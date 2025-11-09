@@ -135,6 +135,17 @@ app.post("/users", async (req, res) => {
   }
 });
 
+app.get("/users", async (req, res) => {
+  try {
+    const data = await User.find();
+    res.json(data);
+    
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error fetching teachers" });
+  }
+});
+
 // Login (demo only; plaintext password)
 app.post("/login", async (req, res) => {
   try {
@@ -607,6 +618,58 @@ app.delete("/teacher/:_id", async (req, res) => {
     res.status(500).json({ error: "Error updating contact" });
   }
 });
+
+app.delete("/members/:_id", async (req, res) => {
+  
+  const { _id } = req.params;
+  console.log(_id)
+  try {
+    const update = await Gallery.findByIdAndDelete(
+      _id
+      
+    );
+    res.status(200).json(update);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error updating contact" });
+  }
+});
+
+
+app.delete("/users/:_id", async (req, res) => {
+  
+  const { _id } = req.params;
+  console.log(_id)
+  try {
+    const update = await User.findByIdAndDelete(
+      _id
+      
+    );
+    res.status(200).json(update);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error updating user" });
+  }
+});
+
+
+
+app.delete("/events/:_id", async (req, res) => {
+  
+  const { _id } = req.params;
+  console.log(_id)
+  try {
+    const update = await Event.findByIdAndDelete(
+      _id
+      
+    );
+    res.status(200).json(update);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error updating contact" });
+  }
+});
+
 
 
 

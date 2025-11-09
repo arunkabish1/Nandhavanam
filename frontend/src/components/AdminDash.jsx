@@ -25,10 +25,22 @@ const StatusMessage = ({ message, type }) => {
 export default function AdminDash() {
 
 
-  const handleDelete = async (_id) => {
+  const handleDelete = async (_id,value) => {
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/teacher/${_id}`, { method: "DELETE" });
-      setTeachersData((prev) => prev.filter((teacher) => teacher._id !== _id));
+      console.log(value)
+      await fetch(`${import.meta.env.VITE_API_URL}/${value}/${_id}`, { method: "DELETE" });
+      if (value == "teacher"){
+        setTeachersData((prev) => prev.filter((teacher) => teacher._id !== _id));
+      }
+      if (value == "members"){
+        setMembersData((prev) => prev.filter((member) => member._id !== _id));
+      }
+      if (value == "events"){
+        setMembersData((prev) => prev.filter((event) => event._id !== _id));
+      }
+       if (value == "users") {
+      setUsersData((prev) => prev.filter((u) => u._id !== _id));
+    }
     } catch (err) {
       console.log(err);
     }
@@ -55,14 +67,13 @@ export default function AdminDash() {
     email: "",
     description: "",
   });
-  
+    const [membersData, setMembersData] = useState([]);
   const [memberImage, setMemberImage] = useState(null);
   const [memberStatus, setMemberStatus] = useState({ message: "", type: "" });
   const [isSubmittingMember, setIsSubmittingMember] = useState(false);
   const [isGeneratingBio, setIsGeneratingBio] = useState(false);
 
   const [contactdata, setContactdata] = useState([]);
-  const [teacherdata,setTeacherdata] = useState([])
   const [openModal, setOpenModal] = useState(false);
   const [selectedContact, setSelectedContact] = useState(null);
   const [replyMessage, setReplyMessage] = useState("");
@@ -76,11 +87,13 @@ export default function AdminDash() {
     home: false,
     date: "",
   });
+  const [eventsData, setEventsData] = useState([]);
   const [eventImage, setEventImage] = useState(null);
   const [eventStatus, setEventStatus] = useState({ message: "", type: "" });
   const [isSubmittingEvent, setIsSubmittingEvent] = useState(false);
   const [whatsappUrl, setWhatsappUrl] = useState("");
   const [isGeneratingPost, setIsGeneratingPost] = useState(false);
+const [usersData, setUsersData] = useState([]);
 
   const [roleData, setRoleData] = useState({
     name: "",
@@ -120,7 +133,42 @@ export default function AdminDash() {
       );
     } catch {}
   };
+useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/notifications`);
+        const data = await res.json();
+        setEventsData(data || []);
+        console.log(data)
+      } catch {}
+    })();
+  }, []);
 
+  useEffect(() => {
+  (async () => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/users`);
+      const data = await res.json();
+      setUsersData(data || []);
+    } catch (err) {
+      console.log(err);
+    }
+  })();
+}, []);
+
+
+
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/members`);
+        const data = await res.json();
+        setMembersData(data || []);
+        // console.log(data)
+      } catch {}
+    })();
+  }, []);
 useEffect(() => {
     (async () => {
       try {
@@ -398,7 +446,7 @@ Output plain text only.`
 
         {/* USERS */}
         {activeTab === "users" && (
-          <div className="bg-white shadow-lg rounded-lg p-6 max-w-xl mx-auto">
+          <><div className="bg-white shadow-lg rounded-lg p-6 max-w-xl mx-auto">
             <h2 className="text-lg font-semibold mb-4">Add User</h2>
             <form onSubmit={addRole} className="space-y-4">
               <input
@@ -406,30 +454,26 @@ Output plain text only.`
                 placeholder="Name"
                 name="name"
                 required
-                onChange={handleInputChange(setRoleData)}
-              />
+                onChange={handleInputChange(setRoleData)} />
               <input
                 className={inputClass}
                 placeholder="Email"
                 name="email"
                 required
-                onChange={handleInputChange(setRoleData)}
-              />
+                onChange={handleInputChange(setRoleData)} />
               <input
                 className={inputClass}
                 placeholder="Mobile"
                 name="mobile"
                 required
-                onChange={handleInputChange(setRoleData)}
-              />
+                onChange={handleInputChange(setRoleData)} />
               <div className="flex gap-6">
                 <label className="flex gap-2 items-center">
                   <input
                     type="radio"
                     name="role"
                     value="admin"
-                    onChange={handleInputChange(setRoleData)}
-                  />{" "}
+                    onChange={handleInputChange(setRoleData)} />{" "}
                   Admin
                 </label>
                 <label className="flex gap-2 items-center">
@@ -437,8 +481,7 @@ Output plain text only.`
                     type="radio"
                     name="role"
                     value="user"
-                    onChange={handleInputChange(setRoleData)}
-                  />{" "}
+                    onChange={handleInputChange(setRoleData)} />{" "}
                   User
                 </label>
               </div>
@@ -447,12 +490,42 @@ Output plain text only.`
               </button>
               <StatusMessage {...roleStatus} />
             </form>
-          </div>
+          </div><div className="overflow-x-auto mt-8">
+              <table className="w-full min-w-[500px] text-left border">
+                <thead className="bg-gray-50 text-sm">
+                  <tr>
+                    <th className="p-3 border-b">Name</th>
+                    <th className="p-3 border-b">Email</th>
+                    <th className="p-3 border-b">Mobile</th>
+                    <th className="p-3 border-b">Role</th>
+                    <th className="p-3 border-b">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {usersData.map((u) => (
+                    <tr key={u._id} className="border hover:bg-gray-50">
+                      <td className="p-3">{u.name}</td>
+                      <td className="p-3">{u.email}</td>
+                      <td className="p-3">{u.mobile}</td>
+                      <td className="p-3 capitalize">{u.role}</td>
+                      <td className="p-3">
+                        <button
+                          onClick={() => handleDelete(u._id, "users")}
+                          className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div></>
         )}
 
         {/* EVENTS */}
         {activeTab === "events" && (
-          <div className="bg-white shadow-lg rounded-lg p-6 max-w-3xl mx-auto">
+          <><div className="bg-white shadow-lg rounded-lg p-6 max-w-3xl mx-auto">
             <h2 className="text-lg font-semibold mb-4">Add Event</h2>
             <form onSubmit={addEvent} className="space-y-4">
               <input
@@ -461,8 +534,7 @@ Output plain text only.`
                 placeholder="Event Name"
                 value={eventData.event}
                 onChange={handleInputChange(setEventData)}
-                required
-              />
+                required />
 
               <div>
                 <div className="flex justify-between items-center mb-1">
@@ -481,8 +553,7 @@ Output plain text only.`
                   name="post"
                   value={eventData.post}
                   onChange={handleInputChange(setEventData)}
-                  required
-                />
+                  required />
               </div>
 
               <div className="flex gap-4 flex-wrap">
@@ -492,8 +563,7 @@ Output plain text only.`
                       type="checkbox"
                       name={n}
                       checked={eventData[n]}
-                      onChange={handleInputChange(setEventData)}
-                    />{" "}
+                      onChange={handleInputChange(setEventData)} />{" "}
                     {n.toUpperCase()}
                   </label>
                 ))}
@@ -503,16 +573,14 @@ Output plain text only.`
                 type="file"
                 onChange={handleFileChange(setEventImage)}
                 className="text-sm"
-                required
-              />
+                required />
               <input
                 type="date"
                 name="date"
                 value={eventData.date}
                 onChange={handleInputChange(setEventData)}
                 className={inputClass}
-                required
-              />
+                required />
 
               <button className={buttonPrimary} disabled={isSubmittingEvent}>
                 {isSubmittingEvent ? "Adding..." : "Add Event"}
@@ -529,12 +597,37 @@ Output plain text only.`
                 </a>
               )}
             </form>
-          </div>
+          </div><div className="overflow-x-auto mt-20">
+              <table className="w-full min-w-[500px] text-left border">
+                <thead className="bg-gray-50 text-sm">
+                  <tr>
+                    <th className="p-3 border-b">Event</th>
+                    <th className="p-3 border-b">Description</th>
+                    <th className="p-3 border-b">Date</th>
+                    <th className="p-3 border-b">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {eventsData.map((c) => (
+                    <tr key={c._id} className="border hover:bg-gray-50">
+                      <td className="p-3">{c.event}</td>
+                      <td className="p-3">{c.post}</td>
+                      <td className="p-3">{c.date}</td>
+                      <td className="p-3">
+                        <button onClick={() => handleDelete(c._id, "events")} className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600">
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div></>
         )}
 
         {/* MEMBERS */}
         {activeTab === "members" && (
-          <div className="bg-white shadow-lg rounded-lg p-6 max-w-3xl mx-auto">
+          <><div className="bg-white shadow-lg rounded-lg p-6 max-w-3xl mx-auto">
             <h2 className="text-lg font-semibold mb-4">Add Gallery Member</h2>
             <form onSubmit={addMember} className="space-y-4">
               <input
@@ -543,24 +636,21 @@ Output plain text only.`
                 value={memberData.name}
                 placeholder="Name"
                 onChange={handleInputChange(setMemberData)}
-                required
-              />
+                required />
               <input
                 className={inputClass}
                 name="email"
                 value={memberData.email}
                 placeholder="Email"
                 onChange={handleInputChange(setMemberData)}
-                required
-              />
+                required />
               <input
                 className={inputClass}
                 name="position"
                 value={memberData.position}
                 placeholder="Position"
                 onChange={handleInputChange(setMemberData)}
-                required
-              />
+                required />
 
               <div>
                 <div className="flex justify-between items-center mb-1">
@@ -579,22 +669,45 @@ Output plain text only.`
                   name="description"
                   value={memberData.description}
                   onChange={handleInputChange(setMemberData)}
-                  required
-                />
+                  required />
               </div>
 
               <input
                 type="file"
                 onChange={handleFileChange(setMemberImage)}
-                className="text-sm"
-              />
+                className="text-sm" />
 
               <button className={buttonPrimary} disabled={isSubmittingMember}>
                 {isSubmittingMember ? "Adding..." : "Add Member"}
               </button>
               <StatusMessage {...memberStatus} />
             </form>
-          </div>
+          </div><div className="overflow-x-auto mt-20">
+              <table className="w-full min-w-[500px] text-left border">
+                <thead className="bg-gray-50 text-sm">
+                  <tr>
+                    <th className="p-3 border-b">Name</th>
+                    <th className="p-3 border-b">Position</th>
+                    <th className="p-3 border-b">Email</th>
+                    <th className="p-3 border-b">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {membersData.map((c) => (
+                    <tr key={c._id} className="border hover:bg-gray-50">
+                      <td className="p-3">{c.mname}</td>
+                      <td className="p-3">{c.position}</td>
+                      <td className="p-3">{c.email}</td>
+                      <td className="p-3">
+                        <button onClick={() => handleDelete(c._id,"members")} className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600">
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div></>
         )}
 
         {/* CONTACTS */}
@@ -749,7 +862,7 @@ Output plain text only.`
                       <td className="p-3">{c.position}</td>
                       <td className="p-3">{c.email}</td>
                       <td className="p-3">
-                        <button onClick={() => handleDelete(c._id)} className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600">
+                        <button onClick={() => handleDelete(c._id,"teacher")} className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600">
                           Remove
                         </button>
                       </td>
