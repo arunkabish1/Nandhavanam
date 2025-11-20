@@ -10,16 +10,18 @@ export default {
         'PPPangram':['Pangram','cursive'],
         'hind':['hindmadurai','san-serif'],
         'baloo':['baloo','cursive'],
+      }, keyframes: {
+        marquee: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
       },
       animation: {
-        'infinite-scroll': 'infinite-scroll 25s linear infinite',
+        marquee: "marquee 30s linear infinite",
+        marqueeFast: "marquee 15s linear infinite",
       },
-      keyframes: {
-        'infinite-scroll': {
-          from: { transform: 'translateX(0)' },
-          to: { transform: 'translateX(-100%)' },
-        }
-      }
+      
+      
     },
   },
   plugins: [],

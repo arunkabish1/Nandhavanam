@@ -8,126 +8,126 @@ export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [showlogin, setShowlogin] = useState(true);
 
-  // ✅ Check login token
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     if (token) setShowlogin(false);
   }, []);
 
+  const navItems = [
+    { name: "Home", path: "/" },
+    { name: "About", path: "/about" },
+    { name: "Members", path: "/gallery" },
+    { name: "Teachers", path: "/teacher" },
+    { name: "Admissions", path: "/admission" },
+    { name: "Contact", path: "/contact" },
+  ];
+
   return (
     <>
-      {/* 🌟 HEADER */}
-      <header className="fixed top-0 left-0 w-full bg-white/70 backdrop-blur-lg shadow-md z-50 transition-all duration-300">
-        <div className="max-w-7xl mx-auto px-5 py-3 flex items-center justify-between">
-          {/* 🔰 Logo Section */}
-          <a href="/" className="flex items-center gap-3 cursor-pointer select-none">
-            <img
+      {/* HEADER */}
+      <header className="fixed inset-x-0 top-0 z-50 bg-slate-900/80 backdrop-blur-xl shadow-lg">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
+
+          {/* LOGO */}
+          <a href="/" className="flex items-center gap-3">
+            <motion.img
               src={logo}
-              alt="Nandhavanam Logo"
-              className="h-10 w-10 rounded-full object-cover shadow-sm"
+              alt="Logo"
+              className="h-12 w-12 rounded-full border border-white/20 object-cover shadow-md"
+              whileHover={{ scale: 1.08 }}
+              transition={{ duration: 0.3 }}
             />
-            <h1 className="text-2xl font-extrabold text-gray-800 tracking-tight font-[Poppins]">
+
+            <motion.h1
+              className="font-poppins text-2xl font-extrabold tracking-tight text-white"
+              whileHover={{ x: 3 }}
+            >
               நந்தவனம்
-            </h1>
+            </motion.h1>
           </a>
 
-          {/* 🧭 Desktop Navigation (only visible ≥1024px) */}
-          <nav className="hidden lg:flex flex-1 justify-center">
-            <ul className="flex gap-8 text-gray-800 font-semibold">
-              {[
-                { name: "Home", path: "/" },
-                { name: "About", path: "/about" },
-                { name: "Members", path: "/gallery" },
-                { name: "Teachers", path: "/teacher" },
-                { name: "Admissions", path: "/admission" },
-                { name: "Contact", path: "/contact" },
-              ].map((link) => (
-                <li key={link.name}>
-                  <NavLink
-                    to={link.path}
-                    className={({ isActive }) =>
-                      `transition-all duration-200 hover:text-blue-600 ${
-                        isActive
-                          ? "text-blue-600 border-b-2 border-blue-600 pb-1"
-                          : ""
-                      }`
-                    }
-                  >
-                    {link.name}
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
+          {/* DESKTOP NAV */}
+          <nav className="hidden gap-10 lg:flex">
+            {navItems.map((link) => (
+              <NavLink
+                key={link.name}
+                to={link.path}
+                className={({ isActive }) =>
+                  [
+                    "relative font-medium tracking-wide transition text-white/90 hover:text-blue-400",
+                    isActive && "text-blue-400",
+                  ].join(" ")
+                }
+              >
+                {({ isActive }) =>
+                  isActive && (
+                    <motion.span
+                      layoutId="activeIndicator"
+                      className="absolute left-0 -bottom-1 h-[2px] w-full rounded-full bg-blue-500"
+                    />
+                  )
+                }
+                {link.name}
+              </NavLink>
+            ))}
           </nav>
 
-          {/* 💼 Desktop Login/Admin (≥1024px) */}
-          <div className="hidden lg:flex items-center gap-4">
+          {/* DESKTOP LOGIN */}
+          <div className="hidden lg:flex">
             <NavLink
               to={showlogin ? "/login" : "/admin"}
-              className="px-5 py-2.5 rounded-full font-semibold bg-gradient-to-r from-blue-700 to-indigo-700 text-white hover:from-indigo-700 hover:to-blue-700 transition-transform hover:scale-105 shadow-sm"
+              className="rounded-full bg-gradient-to-r from-blue-600 to-indigo-700 px-5 py-2.5 font-semibold text-white shadow-lg transition hover:scale-105 hover:shadow-xl"
             >
               {showlogin ? "Login" : "Admin Panel"}
             </NavLink>
           </div>
 
-          {/* 📱 Mobile + Tablet Menu Button (<1024px) */}
+          {/* MOBILE MENU BUTTON */}
           <button
-            className="lg:hidden text-gray-800 p-2 rounded-md hover:bg-gray-200 transition"
             onClick={() => setIsOpen(!isOpen)}
+            className="rounded-lg border border-white/20 bg-white/10 p-2 text-yellow-300 transition hover:bg-white/20 lg:hidden"
           >
-            {isOpen ? <X size={26} /> : <Menu size={26} />}
+            {isOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
         </div>
       </header>
 
-      {/* 📱 Mobile/Tablet Dropdown (≤1023px) */}
+      {/* MOBILE MENU */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="lg:hidden bg-white/90 backdrop-blur-xl border-t border-gray-200 shadow-md fixed top-16 left-0 right-0 z-40 rounded-b-2xl overflow-hidden"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-x-0 top-16 z-40 rounded-b-2xl border-b border-slate-300/50 bg-white/80 backdrop-blur-xl shadow-xl lg:hidden"
           >
-            <ul className="flex flex-col items-center space-y-4 text-gray-800 font-semibold py-6">
-              {[
-                { name: "Home", path: "/" },
-                { name: "About", path: "/about" },
-                { name: "Members", path: "/gallery" },
-                { name: "Teachers", path: "/teacher" },
-                { name: "Admissions", path: "/admission" },
-                { name: "Contact", path: "/contact" },
-              ].map((link) => (
+            <ul className="flex flex-col items-center gap-3 py-6 font-semibold text-gray-900">
+
+              {navItems.map((link) => (
                 <li key={link.name} className="w-full text-center">
                   <NavLink
                     to={link.path}
-                    className="inline-block w-4/5 py-2 rounded-xl transition-all hover:bg-blue-600 hover:text-white"
                     onClick={() => setIsOpen(false)}
+                    className="inline-block w-4/5 rounded-xl py-3 transition hover:bg-blue-600 hover:text-white"
                   >
                     {link.name}
                   </NavLink>
                 </li>
               ))}
 
-              {/* 🔐 Login / Admin Button */}
-              <li className="w-full flex justify-center mt-2">
+              {/* LOGIN / ADMIN BUTTON */}
+              <li className="w-full text-center">
                 <NavLink
                   to={showlogin ? "/login" : "/admin"}
                   onClick={() => setIsOpen(false)}
-                  className="w-4/5 flex items-center justify-center gap-2 bg-gradient-to-r from-blue-700 to-indigo-700 text-white px-5 py-2 rounded-full font-semibold hover:from-indigo-700 hover:to-blue-700 transition"
+                  className="inline-flex w-4/5 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-700 py-3 font-semibold text-white shadow-md transition hover:scale-105"
                 >
-                  {showlogin ? (
-                    <>
-                    <LogIn size={18} /> Login
-                    </>
-                  ) : (
-                    <>
-                    <Settings size={18} /> Admin Panel
-                    </>
-                  )}
+                  {showlogin ? <LogIn size={18} /> : <Settings size={18} />}
+                  {showlogin ? "Login" : "Admin Panel"}
                 </NavLink>
               </li>
+
             </ul>
           </motion.div>
         )}

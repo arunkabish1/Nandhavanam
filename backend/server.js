@@ -7,7 +7,6 @@ import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { Resend } from "resend";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import nodeMailer from "nodemailer";
 
 dotenv.config();
 
@@ -174,9 +173,8 @@ app.post("/login", async (req, res) => {
 // Events
 app.post("/events", uploadEvent.single("image"), async (req, res) => {
   try {
-    const { event, post, sms, mail, home, date, toEmail } = req.body;
+    const { event, post, sms, mail, home, date } = req.body;
 
-    // Coerce booleans coming from FormData
     const toBool = (v) =>
       v === true || v === "true" || v === "on" || v === 1 || v === "1";
 
@@ -194,69 +192,14 @@ app.post("/events", uploadEvent.single("image"), async (req, res) => {
       image: req.file?.path || "",
     });
 
-    await newEvent.save();
+    await newEvent.save(); // Save event first
+
     const imageUrl = newEvent.image;
-    3;
-    // console.log(imageUrl)
-    // respond to client ONCE
-    // res.status(201).json(newEvent);
 
-    if (mailBool) {
-      const transporter = nodeMailer.createTransport({
-        host: "smtp.hostinger.com",
-        port: 465,
-        secure: true,
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-      });
-
-      const members = await Gallery.find({}, { email: 1, _id: 0 });
-      const recipients = members.map((m) => m.email);
-
-      // console.log(recipients);
-
-      if (recipients.length) {
-        const formattedDate = date
-          ? new Date(date).toLocaleString("en-GB", {
-              day: "2-digit",
-              month: "short",
-              year: "numeric",
-            })
-          : "TBA";
-
-        const html = `
-          <div style="font-family: Arial, sans-serif; background:#f7f7f7; padding:20px; display:flex; justify-content:center;">
-            <div style="max-width:900px; background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 3px 12px rgba(0,0,0,0.08);">
-              <div style="background:#0A2753; padding:24px; text-align:center;">
-                <img src="https://res.cloudinary.com/delx0bz9t/image/upload/v1762606982/ede80afc-7fe7-4e07-8841-1807b2a6eebd.png" style="width:120px;margin-bottom:12px;" />
-                <h2 style="color:#ffffff; margin:0;">NFA Kuwait</h2>
-              </div>
-              <div style="padding:24px; color:#1a1a1a;">
-                <h3 style="margin-top:0;">You're Invited for the ${event} at NFA Kuwait</h3>
-                <p><b>Date:</b> ${formattedDate}</p>
-
-                <img src="${imageUrl}" alt="Event Image" style="width:100%; max-width:600px; border-radius:8px; margin-top:10px;" />
-                
-                <div style="background:#f1f5f9; padding:16px; border-left:4px solid #0A2753; border-radius:6px; margin:20px 0;">
-                  <p style="margin:0; white-space:pre-wrap; line-height:1.5;">${post}</p>
-                </div>
-                <a href="https://nfakuwait.com" style="display:inline-block; margin-top:12px; padding:10px 16px; background:#0A2753; color:#ffffff; text-decoration:none; border-radius:6px; font-weight:600;">Visit Our Website</a>
-              </div>
-              <div style="background:#eceff3; padding:14px; text-align:center; font-size:12px; color:#666;">
-                This is an automated email. Please do not reply directly.
-              </div>
-            </div>
-          </div>`;
-        await transporter.sendMail({
-          from: '"NFA Team" <nfa-team@nfakuwait.com>',
-          bcc: recipients,
-          subject: `Invitation: ${event} From NFA Kuwait Team`,
-          html,
-        });
-      }
-    }
+    // ---------------------------------------
+    // ✔ ALWAYS RESPOND TO FRONTEND IMMEDIATELY
+    // ---------------------------------------
+    let whatsappShareURL = null;
 
     if (smsBool) {
       const formattedDate = date
@@ -267,7 +210,6 @@ app.post("/events", uploadEvent.single("image"), async (req, res) => {
           })
         : "TBA";
 
-      // WhatsApp formatted message (bold, icons, clickable)
       const whatsappMessage = encodeURIComponent(
         `📢 *NFA Kuwait Event Announcement*\n\n` +
           `*Event:* ${event}\n` +
@@ -277,25 +219,83 @@ app.post("/events", uploadEvent.single("image"), async (req, res) => {
           `🌐 Visit Our Website:\nhttps://nfakuwait.com`
       );
 
-      // Share link (this opens WhatsApp with message pre-filled)
-      const whatsappShareURL = `https://wa.me/?text=${whatsappMessage}`;
+      whatsappShareURL = `https://wa.me/?text=${whatsappMessage}`;
+    }
 
-      // console.log("✅ WhatsApp Share Link Generated:");
-      // console.log(whatsappShareURL);
-      res.status(201).json({
-        ...newEvent.toObject(),
-        whatsappShareURL,
-      });
+    res.status(201).json({
+      ...newEvent.toObject(),
+      whatsappShareURL,
+    });
+
+    // ----------------------------------------------------
+    // ✔ SEND EMAIL USING RESEND (AFTER RESPONSE)
+    // ----------------------------------------------------
+    if (mailBool) {
+      const members = await Gallery.find({}, { email: 1, _id: 0 });
+      const recipients = members.map((m) => m.email);
+
+      if (recipients.length === 0) return;
+
+      const formattedDate = date
+        ? new Date(date).toLocaleString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })
+        : "TBA";
+
+      const html = `
+        <div style="font-family: Arial, sans-serif; background:#f7f7f7; padding:20px; display:flex; justify-content:center;">
+          <div style="max-width:900px; background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 3px 12px rgba(0,0,0,0.08);">
+            <div style="background:#0A2753; padding:24px; text-align:center;">
+              <img src="https://res.cloudinary.com/delx0bz9t/image/upload/v1762606982/ede80afc-7fe7-4e07-8841-1807b2a6eebd.png"
+                   style="width:120px;margin-bottom:12px;" />
+              <h2 style="color:#ffffff; margin:0;">NFA Kuwait</h2>
+            </div>
+
+            <div style="padding:24px; color:#1a1a1a;">
+              <h3>You're Invited for the ${event} at NFA Kuwait</h3>
+              <p><b>Date:</b> ${formattedDate}</p>
+
+              <img src="${imageUrl}" alt="Event Image"
+                   style="width:100%; max-width:600px; border-radius:8px; margin-top:10px;" />
+
+              <div style="background:#f1f5f9; padding:16px; border-left:4px solid #0A2753; border-radius:6px; margin-top:20px;">
+                <p style="margin:0; white-space:pre-wrap;">${post}</p>
+              </div>
+
+              <a href="https://nfakuwait.com"
+                 style="display:inline-block; margin-top:12px; padding:10px 16px; background:#0A2753; color:#fff; text-decoration:none; border-radius:6px; font-weight:600;">
+                Visit Our Website
+              </a>
+            </div>
+
+            <div style="background:#eceff3; padding:14px; text-align:center; font-size:12px; color:#666;">
+              This is an automated email. Please do not reply directly.
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Send via Resend
+      resend.emails
+        .send({
+          from: "NFA Kuwait <nfa-team@nfakuwait.com>",
+          bcc: recipients, // Send to all members
+          subject: `Invitation: ${event} NFA Kuwait`,
+          html,
+        })
+        .then(() => console.log("Event email sent"))
+        .catch((err) => console.error("Event email failed:", err));
     }
   } catch (err) {
-    console.error(err);
-    // If save failed before res, client needs an error
-    // If it failed after res, this will be ignored (which is fine)
+    console.error("EVENT API ERROR:", err);
     if (!res.headersSent) {
       res.status(500).json({ error: "Server Error" });
     }
   }
 });
+
 
 // Homepage notifications
 app.get("/notifications", async (req, res) => {
@@ -327,6 +327,17 @@ app.post("/gallery", uploadGallery.single("image"), async (req, res) => {
   }
 });
 
+app.get("/events", async (req, res) => {
+  try {
+    const data = await Event.find();
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error fetching members" });
+  }
+});
+
+
 app.get("/members", async (req, res) => {
   try {
     const data = await Gallery.find();
@@ -342,6 +353,7 @@ app.post("/contacts", async (req, res) => {
   try {
     const { name, email, mobile, message } = req.body;
 
+    // Save contact first
     const newContact = new Contact({
       name,
       email,
@@ -352,93 +364,82 @@ app.post("/contacts", async (req, res) => {
     });
 
     await newContact.save();
+    
+    // Respond immediately to frontend
     res.status(201).json(newContact);
 
-    const transporter = nodeMailer.createTransport({
-      host: "smtp.hostinger.com",
-      port: 465,
-      secure: true,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
+    // Convert new lines in message
+    const safeMessage = message.replace(/\n/g, "<br>");
+    
+    // --------------------------
+    // Send RESPONSE email to USER
+    // --------------------------
+    const userHtml = `
+      <div style="font-family: Arial, sans-serif; background:#f7f7f7; padding:20px; display:flex; justify-content:center;">
+        <div style="max-width:600px; background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 3px 12px rgba(0,0,0,0.08);">
 
-    const mailOptions = {
-      from: '"NFA Team" <nfa-team@nfakuwait.com>',
-      to: email,
-      subject: "We Received Your Message ✅",
-      html: `
-  <div style="font-family: Arial, sans-serif; background:#f7f7f7; padding:20px; display:flex; justify-content:center;">
-    <div style="max-width:600px; background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 3px 12px rgba(0,0,0,0.08);">
+          <div style="background:#0A2753; padding:24px; text-align:center;">
+            <img src="https://res.cloudinary.com/delx0bz9t/image/upload/v1762606982/ede80afc-7fe7-4e07-8841-1807b2a6eebd.png"
+                 alt="NFA Logo" style="width:120px; margin-bottom:12px;" />
+            <h2 style="color:#ffffff; margin:0;">NFA Kuwait</h2>
+          </div>
 
-      <!-- Header -->
-      <div style="background:#0A2753; padding:24px; text-align:center;">
-        <img src="https://res.cloudinary.com/delx0bz9t/image/upload/v1762606982/ede80afc-7fe7-4e07-8841-1807b2a6eebd.png" alt="NFA Logo" style="width:120px; margin-bottom:12px;" />
-        <h2 style="color:#ffffff; margin:0; font-size:20px; font-weight:600;">NFA Kuwait</h2>
-      </div>
+          <div style="padding:24px; color:#1a1a1a;">
+            <h3>Greetings from NFA Support Team 👋</h3>
 
-      <!-- Body -->
-      <div style="padding:24px; color:#1a1a1a;">
-        <h3 style="margin-top:0; font-size:18px;">Thank you for contacting us!</h3>
+            <p>We have received your message and will get back to you shortly. Here is a copy of your message:</p>
 
-        <p>We have received your message and our team will get back to you within <b>24 hours.</b></p>
+            <div style="background:#f1f5f9; padding:16px; border-left:4px solid #0A2753; border-radius:6px;">
+              <p style="margin:0; white-space:pre-wrap; line-height:1.5;">${safeMessage}</p>
+            </div>
 
+            <p>Warm regards,<br><b>NFA Support Team</b></p>
 
-        <div style="background:#f1f5f9; padding:16px; border-left:4px solid #0A2753; border-radius:6px; margin:20px 0;">
-          <p style="margin:6px 0;"><b>Name:</b> ${name}</p>
-          <p style="margin:6px 0;"><b>Email:</b> ${email}</p>
-          <p style="margin:6px 0;"><b>Mobile:</b> ${mobile}</p>
-          <p style="margin:6px 0;"><b>Message:</b><br>${message.replace(
-            /\n/g,
-            "<br>"
-          )}</p>
+            <a href="https://nfakuwait.com" style="display:inline-block; margin-top:12px; padding:10px 16px; background:#0A2753; color:#fff; text-decoration:none; border-radius:6px; font-weight:600;">Visit Our Website</a>
+          </div>
+
+          <div style="background:#eceff3; padding:14px; text-align:center; font-size:12px; color:#666;">
+            This is an automated email. Please do not reply directly.
+          </div>
+
         </div>
-
-        <p>We appreciate your trust and will respond as soon as possible.</p>
-        <p style="margin-top:20px;">Warm regards,<br><b>NFA Support Team</b></p>
-
-        <a href="https://nfakuwait.com" style="display:inline-block; margin-top:12px; padding:10px 16px; background:#0A2753; color:#ffffff; text-decoration:none; border-radius:6px; font-weight:600;">Visit Our Website</a>
       </div>
+    `;
+    console.log("resend api", process.env.RESEND_API_KEY);
+    resend.emails.send({
+      from: "NFA Kuwait <nfa-team@nfakuwait.com>",
+      to: email,
+      subject: "We Received Your Message – NFA Kuwait",
+      html: userHtml,
+    }).then(() => console.log("User email sent"))
+    .catch(err => console.error("User email failed:", err));
 
-      <!-- Footer -->
-      <div style="background:#eceff3; padding:14px; text-align:center; font-size:12px; color:#666;">
-        This is an automated email. Please do not reply directly.
-      </div>
-    </div>
-  </div>
-  `,
-    };
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        return console.log("Error sending email:", error);
-      }
-      console.log("Email sent:", info.response);
-    });
 
-    const adminMailOptions = {
-      from: '"NFA Team" <nfa-team@nfakuwait.com>',
+    // --------------------------
+    // Send NOTIFICATION email to ADMIN
+    // --------------------------
+    const adminHtml = `
+      <h3>New contact received:</h3>
+      <p><b>Name:</b> ${name}</p>
+      <p><b>Email:</b> ${email}</p>
+      <p><b>Mobile:</b> ${mobile}</p>
+      <p><b>Message:</b> ${safeMessage}</p>
+    `;
+
+    resend.emails.send({
+      from: "NFA Kuwait <nfa-team@nfakuwait.com>",
       to: "nandavanamkuwait@gmail.com",
-      subject: "New Contact Form Submission 📬",
-      html: `
-        <h3>New contact form submission received:</h3>
-        <p><b>Name:</b> ${name}</p>
-        <p><b>Email:</b> ${email}</p>
-        <p><b>Mobile:</b> ${mobile}</p>
-        <p><b>Message:</b> ${message}</p>
-      `,
-    };
-    transporter.sendMail(adminMailOptions, (error, info) => {
-      if (error) {
-        return console.log("Error sending admin email:", error);
-      }
-      console.log("Admin email sent:", info.response);
-    });
+      subject: "📬 New Contact Submission – NFA Kuwait",
+      html: adminHtml,
+    }).then(() => console.log("Admin email sent"))
+    .catch(err => console.error("Admin email failed:", err));
+
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Error saving contact" });
+    return res.status(500).json({ error: "Error saving contact" });
   }
 });
+
 
 app.get("/contactsview", async (req, res) => {
   try {
