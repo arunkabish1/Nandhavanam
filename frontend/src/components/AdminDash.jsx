@@ -398,10 +398,9 @@ Output plain text only.`
           date: selectedContact.createdAt,
         }),
       });
-
+      alert("✅ Email Sent Successfully");
       handleChange(selectedContact._id);
       setReplyMessage("");
-      alert("✅ Email Sent Successfully");
     } catch {
       alert("❌ Failed to send email");
     } finally {

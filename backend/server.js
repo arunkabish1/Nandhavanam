@@ -563,9 +563,15 @@ app.post("/sent-reply", async (req, res) => {
       </div>`,
     };
 
-    await transporter.sendMail(adminMailOptions);
+   try {
+  const info = await transporter.sendMail(adminMailOptions);
+  console.log("Mail sent:", info.response);
+  return res.status(200).json({ message: "Reply sent successfully" });
+} catch (error) {
+  console.error("SMTP ERROR:", error);  // <-- IMPORTANT
+  return res.status(500).json({ error: "Error sending reply email", details: error });
+}
 
-    res.status(200).json({ message: "Reply sent successfully ✅" });
   } catch (err) {
     console.error("Error sending reply:", err);
     res.status(500).json({ error: "Error sending reply email" });
@@ -671,6 +677,9 @@ app.delete("/events/:_id", async (req, res) => {
 });
 
 
+app.get("/", (req, res) => {
+  res.send("NFA Kuwait API is running");
+});
 
 
 

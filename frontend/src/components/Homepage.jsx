@@ -255,7 +255,6 @@ export default function Homepage() {
 
        
 {/* our sponsers */}
-          <HoverImageLinks/>
 
 
 
