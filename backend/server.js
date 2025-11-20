@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import multer from "multer";
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
+import { Resend } from "resend";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import nodeMailer from "nodemailer";
 
@@ -497,84 +498,73 @@ app.post("/generate", async (req, res) => {
   }
 });
 
+const resend = new Resend(process.env.RESEND_API_KEY);
+
 app.post("/sent-reply", async (req, res) => {
+  const { toEmail, message, date } = req.body;
+
   try {
-    const { toEmail, message, date } = req.body;
-
-    const formattedDate = new Date(date).toLocaleDateString("en-US", {
-      day: "numeric",
-      month: "long",
+    const formatted = new Date(date).toLocaleDateString("en-US", {
       year: "numeric",
+      month: "long",
+      day: "numeric",
     });
 
-    const transporter = nodeMailer.createTransport({
-      host: "smtp.hostinger.com",
-
-      port: 587,
-      secure: false,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-      tls: {
-        rejectUnauthorized: false,
-      },
-    });
-    console.log(process.env.SMTP_PASS);
-    const adminMailOptions = {
-      from: '"NFA Team" <nfa-team@nfakuwait.com>',
+    const response = await resend.emails.send({
+      from: "NFA Kuwait <nfa-team@nfakuwait.com>",
       to: toEmail,
-      subject: "Response to Your Contact Submission ✅",
+      subject: "Response to Your Contact Submission",
       html: `
-      <div style="font-family: Arial, sans-serif; background:#f7f7f7; padding:20px; display:flex; justify-content:center;">
-        <div style="max-width:600px; background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 3px 12px rgba(0,0,0,0.08);">
+        <div style="font-family: Arial, sans-serif; background:#f7f7f7; padding:20px; display:flex; justify-content:center;">
+  <div style="max-width:600px; background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 3px 12px rgba(0,0,0,0.08);">
 
-          <div style="background:#0A2753; padding:24px; text-align:center;">
-            <img src="https://res.cloudinary.com/delx0bz9t/image/upload/v1762606982/ede80afc-7fe7-4e07-8841-1807b2a6eebd.png" style="width:120px;margin-bottom:12px;" />
-            <h2 style="color:#ffffff; margin:0;">NFA Kuwait</h2>
-          </div>
+    <!-- Header -->
+    <div style="background:#0A2753; padding:24px; text-align:center;">
+      <img src="https://res.cloudinary.com/delx0bz9t/image/upload/v1762606982/ede80afc-7fe7-4e07-8841-1807b2a6eebd.png" 
+           alt="NFA Logo" 
+           style="width:120px; margin-bottom:12px;" />
+      <h2 style="color:#ffffff; margin:0;">NFA Kuwait</h2>
+    </div>
 
-          <div style="padding:24px; color:#1a1a1a;">
-            <h3 style="margin-top:0;">Greetings from NFA Support Team 👋</h3>
+    <!-- Body -->
+    <div style="padding:24px; color:#1a1a1a;">
+      <h3 style="margin-top:0;">Greetings from NFA Support Team 👋</h3>
 
-            <p>You contacted us on <b>${formattedDate}</b>. Here is our reply:</p>
+      <p>You contacted us on <b>${formatted}</b>. Here is our reply:</p>
 
-            <div style="background:#f1f5f9; padding:16px; border-left:4px solid #0A2753; border-radius:6px; margin:20px 0;">
-              <p style="margin:0; white-space:pre-wrap; line-height:1.5;">
-                ${message}
-              </p>
-            </div>
+      <div style="background:#f1f5f9; padding:16px; border-left:4px solid #0A2753; border-radius:6px; margin:20px 0;">
+        <p style="margin:0; white-space:pre-wrap; line-height:1.5;">
+          ${message}
+        </p>
+      </div>
 
-            <p>Feel free to reply if you need more help.</p>
-            <p>Warm regards,<br><b>NFA Support Team</b></p>
+      <p>Feel free to reply if you need more help.</p>
+      <p>Warm regards,<br><b>NFA Support Team</b></p>
 
-            <a href="https://nfakuwait.com" style="display:inline-block; margin-top:12px; padding:10px 16px; background:#0A2753; color:#ffffff; text-decoration:none; border-radius:6px; font-weight:600;">Visit Our Website</a>
-          </div>
+      <a href="https://nfakuwait.com" 
+         style="display:inline-block; margin-top:12px; padding:10px 16px; background:#0A2753; color:#ffffff; text-decoration:none; border-radius:6px; font-weight:600;">
+        Visit Our Website
+      </a>
+    </div>
 
-          <div style="background:#eceff3; padding:14px; text-align:center; font-size:12px; color:#666;">
-            This is an automated email. Please do not reply directly.
-          </div>
+    <!-- Footer -->
+    <div style="background:#eceff3; padding:14px; text-align:center; font-size:12px; color:#666;">
+      This is an automated email. Please do not reply directly.
+    </div>
 
-        </div>
-      </div>`,
-    };
+  </div>
+</div>
 
-    try {
-      const info = await transporter.sendMail(adminMailOptions);
-      console.log("Mail sent:", info.response);
-      return res.status(200).json({ message: "Reply sent successfully" });
-    } catch (error) {
-      console.error("SMTP ERROR:", error); // <-- IMPORTANT
-      return res
-        .status(500)
-        .json({ error: "Error sending reply email", details: error });
-    }
-  } catch (err) {
-    console.error("Error sending reply:", err);
-    res.status(500).json({ error: "Error sending reply email" });
+      `,
+    });
+
+    console.log("Resend success:", response);
+    return res.status(200).json({ message: "Reply email sent!", response });
+  } catch (e) {
+    console.error("Resend Email Error:", e);
+    return res.status(500).json({ error: "Failed to send email", details: e });
   }
 });
-
 // teacher
 
 app.post("/teacher", uploadTeacher.single("image"), async (req, res) => {
