@@ -111,7 +111,6 @@ const ContactSchema = new mongoose.Schema({
 });
 const Contact = mongoose.model("Contact", ContactSchema);
 
-
 const TeacherSchema = new mongoose.Schema({
   mname: String,
   position: String,
@@ -139,7 +138,6 @@ app.get("/users", async (req, res) => {
   try {
     const data = await User.find();
     res.json(data);
-    
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error fetching teachers" });
@@ -260,36 +258,34 @@ app.post("/events", uploadEvent.single("image"), async (req, res) => {
     }
 
     if (smsBool) {
-  const formattedDate = date
-    ? new Date(date).toLocaleString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      })
-    : "TBA";
+      const formattedDate = date
+        ? new Date(date).toLocaleString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })
+        : "TBA";
 
-  // WhatsApp formatted message (bold, icons, clickable)
-  const whatsappMessage = encodeURIComponent(
-    `📢 *NFA Kuwait Event Announcement*\n\n` +
-    `*Event:* ${event}\n` +
-    
-    `*Date:* ${formattedDate}\n\n` +
-    `${imageUrl}\n\n`+
-    `${post}\n\n` +
-    `🌐 Visit Our Website:\nhttps://nfakuwait.com`
-  );
+      // WhatsApp formatted message (bold, icons, clickable)
+      const whatsappMessage = encodeURIComponent(
+        `📢 *NFA Kuwait Event Announcement*\n\n` +
+          `*Event:* ${event}\n` +
+          `*Date:* ${formattedDate}\n\n` +
+          `${imageUrl}\n\n` +
+          `${post}\n\n` +
+          `🌐 Visit Our Website:\nhttps://nfakuwait.com`
+      );
 
-  // Share link (this opens WhatsApp with message pre-filled)
-  const whatsappShareURL = `https://wa.me/?text=${whatsappMessage}`;
+      // Share link (this opens WhatsApp with message pre-filled)
+      const whatsappShareURL = `https://wa.me/?text=${whatsappMessage}`;
 
-  // console.log("✅ WhatsApp Share Link Generated:");
-  // console.log(whatsappShareURL);
-  res.status(201).json({
-  ...newEvent.toObject(),
-  whatsappShareURL, 
-});
-}
-
+      // console.log("✅ WhatsApp Share Link Generated:");
+      // console.log(whatsappShareURL);
+      res.status(201).json({
+        ...newEvent.toObject(),
+        whatsappShareURL,
+      });
+    }
   } catch (err) {
     console.error(err);
     // If save failed before res, client needs an error
@@ -363,7 +359,7 @@ app.post("/contacts", async (req, res) => {
       secure: true,
       auth: {
         user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
+        pass: process.env.SMTP_PASS,
       },
     });
 
@@ -478,7 +474,7 @@ app.put("/contacts/:id", async (req, res) => {
   }
 });
 
-const apiKey = process.env.GEMINI_API_KEY; 
+const apiKey = process.env.GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(apiKey);
 
 const model = genAI.getGenerativeModel({
@@ -495,7 +491,6 @@ app.post("/generate", async (req, res) => {
     const aiText = result.response.text();
 
     return res.status(200).json({ text: aiText });
-
   } catch (err) {
     console.error("AI generation error:", err);
     return res.status(500).json({ error: "Error generating AI text" });
@@ -515,16 +510,17 @@ app.post("/sent-reply", async (req, res) => {
     const transporter = nodeMailer.createTransport({
       host: "smtp.hostinger.com",
 
-      port: 465,
-      secure: true,
+      port: 587,
+      secure: false,
       auth: {
         user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-          
+        pass: process.env.SMTP_PASS,
       },
-      
+      tls: {
+        rejectUnauthorized: false,
+      },
     });
-    console.log(process.env.SMTP_PASS)
+    console.log(process.env.SMTP_PASS);
     const adminMailOptions = {
       from: '"NFA Team" <nfa-team@nfakuwait.com>',
       to: toEmail,
@@ -563,23 +559,21 @@ app.post("/sent-reply", async (req, res) => {
       </div>`,
     };
 
-   try {
-  const info = await transporter.sendMail(adminMailOptions);
-  console.log("Mail sent:", info.response);
-  return res.status(200).json({ message: "Reply sent successfully" });
-} catch (error) {
-  console.error("SMTP ERROR:", error);  // <-- IMPORTANT
-  return res.status(500).json({ error: "Error sending reply email", details: error });
-}
-
+    try {
+      const info = await transporter.sendMail(adminMailOptions);
+      console.log("Mail sent:", info.response);
+      return res.status(200).json({ message: "Reply sent successfully" });
+    } catch (error) {
+      console.error("SMTP ERROR:", error); // <-- IMPORTANT
+      return res
+        .status(500)
+        .json({ error: "Error sending reply email", details: error });
+    }
   } catch (err) {
     console.error("Error sending reply:", err);
     res.status(500).json({ error: "Error sending reply email" });
   }
 });
-
-
-
 
 // teacher
 
@@ -604,7 +598,6 @@ app.get("/teacher", async (req, res) => {
   try {
     const data = await Teacher.find();
     res.json(data);
-    
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Error fetching teachers" });
@@ -614,10 +607,7 @@ app.get("/teacher", async (req, res) => {
 app.delete("/teacher/:_id", async (req, res) => {
   const { _id } = req.params;
   try {
-    const update = await Teacher.findByIdAndDelete(
-      _id
-      
-    );
+    const update = await Teacher.findByIdAndDelete(_id);
     res.status(200).json(update);
   } catch (err) {
     console.error(err);
@@ -626,14 +616,10 @@ app.delete("/teacher/:_id", async (req, res) => {
 });
 
 app.delete("/members/:_id", async (req, res) => {
-  
   const { _id } = req.params;
-  console.log(_id)
+  console.log(_id);
   try {
-    const update = await Gallery.findByIdAndDelete(
-      _id
-      
-    );
+    const update = await Gallery.findByIdAndDelete(_id);
     res.status(200).json(update);
   } catch (err) {
     console.error(err);
@@ -641,16 +627,11 @@ app.delete("/members/:_id", async (req, res) => {
   }
 });
 
-
 app.delete("/users/:_id", async (req, res) => {
-  
   const { _id } = req.params;
-  console.log(_id)
+  console.log(_id);
   try {
-    const update = await User.findByIdAndDelete(
-      _id
-      
-    );
+    const update = await User.findByIdAndDelete(_id);
     res.status(200).json(update);
   } catch (err) {
     console.error(err);
@@ -658,17 +639,11 @@ app.delete("/users/:_id", async (req, res) => {
   }
 });
 
-
-
 app.delete("/events/:_id", async (req, res) => {
-  
   const { _id } = req.params;
-  console.log(_id)
+  console.log(_id);
   try {
-    const update = await Event.findByIdAndDelete(
-      _id
-      
-    );
+    const update = await Event.findByIdAndDelete(_id);
     res.status(200).json(update);
   } catch (err) {
     console.error(err);
@@ -676,13 +651,9 @@ app.delete("/events/:_id", async (req, res) => {
   }
 });
 
-
 app.get("/", (req, res) => {
   res.send("NFA Kuwait API is running");
 });
-
-
-
 
 // ---- Start ----
 const PORT = process.env.PORT || 5000;
